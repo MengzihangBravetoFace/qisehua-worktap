@@ -297,7 +297,57 @@
   .toast--danger{background:#8f2f27}
   .toast--ok{background:#1b6b57}
 
-  @media (max-width:1080px){ .cols{grid-template-columns:1fr} .stats{grid-template-columns:repeat(2,1fr)} }
+  /* ============ 登录演示 ============ */
+  .layout.is-login{display:block}
+  .layout.is-login .sidebar,.layout.is-login .topbar,.layout.is-login .notice{display:none}
+  .layout.is-login #app{max-width:none;width:100%;padding:0}
+  .login{
+    min-height:100vh;display:grid;place-items:center;padding:24px;
+    background:radial-gradient(900px 460px at 50% -12%,#e4f0e9 0%,rgba(228,240,233,0) 72%),var(--bg);
+  }
+  .login__card{
+    width:min(420px,100%);background:#fff;border:1px solid var(--line);border-radius:16px;
+    box-shadow:0 18px 48px rgba(24,40,30,.12);padding:26px;
+  }
+  .login__card--wide{width:min(520px,100%)}
+  .login__card h1{font-size:19px;margin:16px 0 4px}
+  .login__card .sub{font-size:12.5px;color:var(--muted);margin-bottom:18px;line-height:1.65}
+  .identity-switch{display:flex;gap:6px;background:#f1f3ef;border-radius:9px;padding:3px;margin-bottom:14px}
+  .identity-switch button{
+    flex:1;border:0;background:none;border-radius:7px;padding:7px 6px;font-size:12.5px;
+    color:var(--muted);cursor:pointer;transition:all .16s ease;
+  }
+  .identity-switch button.is-active{background:#fff;color:var(--brand);font-weight:600;box-shadow:0 1px 2px rgba(0,0,0,.06)}
+  .login__demo{background:#fafbf8;border:1px dashed #dfe4db;border-radius:9px;padding:10px 12px;font-size:12px;color:#5f6a62;margin-top:12px;line-height:1.8}
+  .login__demo b{color:#3c473f}
+  .side-logout{
+    margin-left:auto;border:0;background:none;color:var(--muted);font-size:11.5px;cursor:pointer;
+    padding:4px 6px;border-radius:6px;white-space:nowrap;
+  }
+  .side-logout:hover{background:#f2f4f0;color:var(--text)}
+
+  /* ============ 权限模块 ============ */
+  .perm-legend{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-bottom:14px}
+  .perm-legend > span{display:inline-flex;align-items:center;gap:6px}
+  .perm-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .perm-card{border:1px solid var(--line);border-radius:10px;padding:14px;background:#fbfcfa}
+  .perm-card__head{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:10px;flex-wrap:wrap}
+  .perm-card__head h4{font-size:13.5px}
+  .perm-line{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-top:1px dashed #e7ebe4}
+  .perm-card__head + .perm-line{border-top:0;padding-top:0}
+  .perm-role{flex:0 0 84px;font-size:12px;color:var(--muted);padding-top:1px}
+  .perm-caps{display:flex;flex-wrap:wrap;gap:6px;min-width:0}
+  .pill{font-size:11.5px;border-radius:999px;padding:1px 9px;background:#f0f3ee;color:#5b665e;line-height:19px;white-space:nowrap}
+  .pill--ok{background:var(--brand-soft);color:var(--brand);font-weight:600}
+  .pill--tbd{background:#f4f4f2;color:#808880;border:1px dashed #ccd2ca}
+  .mark{
+    display:inline-grid;place-items:center;width:16px;height:16px;border-radius:50%;
+    font-size:10px;font-style:normal;line-height:1;
+  }
+  .mark--ok{background:var(--brand-soft);color:var(--brand);font-weight:700}
+  .mark--tbd{background:#f4f4f2;color:#808880;border:1px dashed #ccd2ca;font-size:9px}
+
+  @media (max-width:1080px){ .cols{grid-template-columns:1fr} .stats{grid-template-columns:repeat(2,1fr)} .perm-grid{grid-template-columns:1fr} }
   @media (max-width:920px){
     .layout{flex-direction:column}
     .sidebar{width:auto;flex:none;height:auto;position:static;flex-direction:row;align-items:center;gap:10px;overflow-x:auto;padding:10px 14px;border-right:0;border-bottom:1px solid var(--line)}
@@ -343,6 +393,7 @@
         <div class="side-user" id="sideUser">吴冲</div>
         <div class="side-role" id="sideRole">传播筹资负责人 · 实名</div>
       </div>
+      <button class="side-logout" data-act="logout">退出</button>
     </div>
   </aside>
 
@@ -532,8 +583,19 @@
 
   var state = {
     role: 'admin', view: 'dashboard', donorId: 'd1', detailTab: 'timeline', wishId: 'w1',
-    donorQuery: '', donorType: 'all', importMapped: false, intentSent: false
+    donorQuery: '', donorType: 'all', importMapped: false, intentSent: false,
+    auth: { loggedIn: false, pick: 'staff', identity: 'staff', draft: '', account: null }
   };
+
+  var BOUND_ACCOUNTS = {
+    staff: { '13800001234': '吴冲', '410105199001011234': '吴冲' },
+    external: { '13900005678': '王海涛' }
+  };
+
+  function maskLogin(raw) {
+    if (/^1[3-9]\d{9}$/.test(raw)) return raw.slice(0, 3) + '****' + raw.slice(7);
+    return raw.slice(0, 4) + '**********' + raw.slice(-4);
+  }
 
   /* ---------------- 工具 ---------------- */
   function $(sel) { return document.querySelector(sel); }
@@ -578,6 +640,20 @@
 
   /* ---------------- 渲染入口 ---------------- */
   function render() {
+    var layout = document.querySelector('.layout');
+    if (!state.auth.loggedIn) {
+      layout.classList.add('is-login');
+      $('#app').innerHTML = viewLogin();
+      window.scrollTo({ top: 0 });
+      return;
+    }
+    if (state.auth.identity === 'external') {
+      layout.classList.add('is-login');
+      $('#app').innerHTML = viewExternalHome();
+      window.scrollTo({ top: 0 });
+      return;
+    }
+    layout.classList.remove('is-login');
     var navs = state.role === 'admin' ? NAV_ADMIN : NAV_PORTAL;
     var activeView = state.view === 'donorDetail' ? 'donors' : (state.view === 'wishDetail' ? 'wishlist' : state.view);
     $('#nav').innerHTML = navs.map(function (n) {
@@ -593,9 +669,10 @@
       $('#sideUser').textContent = '李静';
       $('#sideRole').textContent = '爱心个人 · 捐赠人端';
     } else {
-      $('#sideAvatar').textContent = '吴';
-      $('#sideUser').textContent = '吴冲';
-      $('#sideRole').textContent = '传播筹资负责人 · 实名';
+      var acc = state.auth.account || { name: '吴冲' };
+      $('#sideAvatar').textContent = acc.name.charAt(0);
+      $('#sideUser').textContent = acc.name;
+      $('#sideRole').textContent = '机构工作人员 · 实名';
     }
     var fn = VIEWS[state.view] || VIEWS.dashboard;
     $('#app').innerHTML = fn();
@@ -1043,52 +1120,110 @@
     '</div>';
   }
 
+  /* ---------------- 视图：登录演示 ---------------- */
+  function viewLogin() {
+    var pick = state.auth.pick;
+    return '<div class="login"><div class="login__card">' +
+      '<div class="brand" style="padding:0">' +
+        '<div class="brand__logo">七</div>' +
+        '<div><div class="brand__name">奇色花</div><div class="brand__sub">捐赠人关系维护工作台</div></div>' +
+      '</div>' +
+      '<h1>登录工作台</h1>' +
+      '<p class="sub">机构工作人员与外部人员共用入口，按绑定身份进入不同界面。</p>' +
+      '<div class="identity-switch">' +
+        '<button class="' + (pick === 'staff' ? 'is-active' : '') + '" data-act="login-identity" data-identity="staff">机构工作人员</button>' +
+        '<button class="' + (pick === 'external' ? 'is-active' : '') + '" data-act="login-identity" data-identity="external">外部人员</button>' +
+      '</div>' +
+      '<label class="field"><span>手机号 / 身份证号</span>' +
+        '<input class="input" id="loginId" autocomplete="off" placeholder="11 位手机号或 18 位身份证号" value="' + esc(state.auth.draft) + '"></label>' +
+      '<div class="form-err" id="loginErr"></div>' +
+      '<button class="btn btn--primary" style="width:100%;justify-content:center" data-act="login-submit">登录</button>' +
+      '<div class="login__demo"><b>演示账号</b><br>机构工作人员：13800001234 或 410105199001011234<br>外部人员：13900005678<br>' +
+        '<button class="link" style="padding:0;margin-top:4px" data-act="login-fill">一键填充当前身份的演示账号</button></div>' +
+      '<p class="hint" style="margin-top:12px">本轮仅做界面与校验演示，不接入真实账号系统；外部人员权限待机构确认。</p>' +
+      '</div></div>';
+  }
+
+  function viewExternalHome() {
+    var acc = state.auth.account || { name: '外部人员', masked: '—', method: '手机号' };
+    return '<div class="login"><div class="login__card login__card--wide">' +
+      '<div style="display:flex;justify-content:space-between;align-items:center;gap:12px">' +
+        '<div class="brand" style="padding:0">' +
+          '<div class="brand__logo">七</div>' +
+          '<div><div class="brand__name">奇色花</div><div class="brand__sub">捐赠人关系维护工作台</div></div>' +
+        '</div>' +
+        '<span class="tag tag--warn">权限待定</span>' +
+      '</div>' +
+      '<h1>你好，' + esc(acc.name) + '</h1>' +
+      '<p class="sub">已通过' + esc(acc.method) + ' ' + esc(acc.masked) + ' 登录。外部人员的可见范围与操作权限尚未确定，本轮仅展示占位页。</p>' +
+      '<div class="login__demo"><b>占位说明</b><br>· 不展示任何捐赠人档案、捐赠与物资数据<br>· 权限范围确认后在此接入对应入口<br>· 需要继续演示管理端，请退出后用机构账号登录</div>' +
+      '<div style="display:flex;gap:8px;margin-top:16px;flex-wrap:wrap">' +
+        '<button class="btn btn--ghost" data-act="logout">退出登录</button>' +
+        '<button class="btn btn--primary" data-act="external-scope">查看待定范围说明</button>' +
+      '</div>' +
+      '</div></div>';
+  }
+
   /* ---------------- 视图：权限与账号 ---------------- */
   function viewPermissions() {
-    var matrix = [
-      ['查看档案', '✓', '✓', '✓'],
-      ['新建 / 编辑档案', '✓', '✓', '—'],
-      ['上传与导入数据', '✓', '✓', '—（须实名）'],
-      ['查看敏感字段（手机号）', '✓', '按授权', '—'],
-      ['账号与权限设置', '✓', '—', '—']
+    var modules = [
+      { name: '捐赠人档案', desc: '建档、编辑、变更留痕', caps: ['查看档案', '新建 / 编辑', '历史职务与留痕'] },
+      { name: '数据导入', desc: 'Excel 字段映射与校验', caps: ['上传表格', '字段映射', '导入与拒收记录'] },
+      { name: '待办与提醒', desc: '今日待办与回填', caps: ['查看待办', '新建 / 完成', '回填进时间线'] },
+      { name: '物资与心愿单', desc: '心愿单与物资去向', caps: ['心愿单与占比', '登记认领', '更新去向 / 回馈'] },
+      { name: '分析视图', desc: '聚合分布与候选建议', caps: ['聚合分布', '候选建议（带依据）'] },
+      { name: '权限与账号', desc: '成员、角色与登录', caps: ['成员与实名', '角色权限', '操作留痕'] }
     ];
-    return '<div class="cols">' +
-      '<section class="panel">' +
-        '<div class="panel__head"><h3>脱敏与合规边界</h3><span class="tag tag--danger">设计前提</span></div>' +
-        '<div class="table-scroll"><table class="table"><thead><tr><th>资源类型</th><th>能否入库</th><th>处理方式</th></tr></thead><tbody>' +
-          '<tr><td>政府（教育厅 / 教科文组织等）</td><td><span class="tag tag--danger">不能</span></td><td class="small">整条不入库、不进 AI，不做打码式脱敏</td></tr>' +
-          '<tr><td>基金会</td><td><span class="tag tag--brand">可以</span></td><td class="small">脱敏后录入；对外披露须人工核对</td></tr>' +
-          '<tr><td>学者 / 爱心企业 / 爱心个人</td><td><span class="tag tag--brand">可以</span></td><td class="small">最小必要留存，仅授权人可见</td></tr>' +
-          '<tr><td>儿童与家庭信息</td><td><span class="tag tag--warn">受限</span></td><td class="small">仅保留匿名化描述，影像需监护人授权</td></tr>' +
-        '</tbody></table></div>' +
+    var acc = state.auth.account || { name: '吴冲', role: '机构工作人员', method: '手机号', masked: '138****1234' };
+
+    return '<section class="panel">' +
+        '<div class="panel__head"><h3>当前登录身份</h3><button class="btn btn--ghost btn--sm" data-act="logout">退出登录</button></div>' +
+        '<div class="info-grid" style="margin-top:0;padding-top:0;border-top:0">' +
+          '<div><div class="k">姓名</div><div class="v">' + esc(acc.name) + '</div></div>' +
+          '<div><div class="k">身份</div><div class="v">' + esc(acc.role) + '</div></div>' +
+          '<div><div class="k">登录方式</div><div class="v">' + esc(acc.method) + '</div></div>' +
+          '<div><div class="k">号码（脱敏）</div><div class="v">' + esc(acc.masked) + '</div></div>' +
+        '</div>' +
+        '<p class="hint" style="margin-top:10px">登录仅做界面与校验演示：机构工作人员进入完整管理端，外部人员进入占位页。</p>' +
       '</section>' +
       '<section class="panel">' +
-        '<div class="panel__head"><h3>角色权限</h3><span class="hint">简化版：3 类角色 + 全员实名（F-07）</span></div>' +
-        '<div class="table-scroll"><table class="table"><thead><tr><th>能力</th><th>管理员</th><th>编辑</th><th>查看</th></tr></thead><tbody>' +
-          matrix.map(function (r) {
-            return '<tr><td>' + r[0] + '</td><td class="small">' + r[1] + '</td><td class="small">' + r[2] + '</td><td class="small">' + r[3] + '</td></tr>';
+        '<div class="panel__head"><h3>角色与模块权限</h3><span class="hint">按模块查看谁能做什么</span></div>' +
+        '<div class="perm-legend">' +
+          '<span><i class="mark mark--ok">✓</i> 可用 · 机构工作人员本期全部放开</span>' +
+          '<span><span class="pill pill--tbd">待定</span> 外部人员权限待机构确认，本轮不设细则</span>' +
+        '</div>' +
+        '<div class="perm-grid">' +
+          modules.map(function (m) {
+            return '<div class="perm-card">' +
+              '<div class="perm-card__head"><h4>' + m.name + '</h4><span class="hint">' + m.desc + '</span></div>' +
+              '<div class="perm-line"><span class="perm-role">机构工作人员</span><div class="perm-caps">' +
+                m.caps.map(function (c) { return '<span class="pill pill--ok">✓ ' + c + '</span>'; }).join('') +
+              '</div></div>' +
+              '<div class="perm-line"><span class="perm-role">外部人员</span><div class="perm-caps">' +
+                '<span class="pill pill--tbd">待定</span><span class="hint" style="font-size:11.5px">范围待机构确认</span>' +
+              '</div></div>' +
+            '</div>';
+          }).join('') +
+        '</div>' +
+      '</section>' +
+      '<section class="panel">' +
+        '<div class="panel__head"><h3>账号与实名状态</h3><span class="hint">未实名账号不得上传信息</span></div>' +
+        '<div class="table-scroll"><table class="table"><thead><tr><th>姓名</th><th>角色</th><th>实名</th><th>可见范围</th><th>状态</th></tr></thead><tbody>' +
+          DATA.accounts.map(function (a) {
+            var realChip = a.real === '已实名' ? '<span class="tag tag--brand">已实名</span>'
+              : a.real === '待实名' ? '<span class="tag tag--warn">待实名</span>'
+              : '<span class="tag tag--danger">未实名</span>';
+            var stChip = a.status === '启用' ? '<span class="tag">启用</span>'
+              : a.status === '限制中' ? '<span class="tag tag--warn">限制中</span>'
+              : '<span class="tag">待激活</span>';
+            return '<tr><td>' + esc(a.name) + '</td><td>' + esc(a.role) + '</td><td>' + realChip + '</td><td class="small">' + esc(a.scope) + '</td><td>' + stChip + '</td></tr>';
           }).join('') +
         '</tbody></table></div>' +
       '</section>' +
-    '</div>' +
-    '<section class="panel">' +
-      '<div class="panel__head"><h3>账号与实名状态</h3><span class="hint">未实名账号不得上传信息</span></div>' +
-      '<div class="table-scroll"><table class="table"><thead><tr><th>姓名</th><th>角色</th><th>实名</th><th>可见范围</th><th>状态</th></tr></thead><tbody>' +
-        DATA.accounts.map(function (a) {
-          var realChip = a.real === '已实名' ? '<span class="tag tag--brand">已实名</span>'
-            : a.real === '待实名' ? '<span class="tag tag--warn">待实名</span>'
-            : '<span class="tag tag--danger">未实名</span>';
-          var stChip = a.status === '启用' ? '<span class="tag">启用</span>'
-            : a.status === '限制中' ? '<span class="tag tag--warn">限制中</span>'
-            : '<span class="tag">待激活</span>';
-          return '<tr><td>' + esc(a.name) + '</td><td>' + esc(a.role) + '</td><td>' + realChip + '</td><td class="small">' + esc(a.scope) + '</td><td>' + stChip + '</td></tr>';
-        }).join('') +
-      '</tbody></table></div>' +
-    '</section>' +
-    '<section class="panel">' +
-      '<div class="panel__head"><h3>操作留痕</h3><span class="hint">谁在什么时候改了什么</span></div>' +
-      auditTable(DATA.audit) +
-    '</section>';
+      '<section class="panel">' +
+        '<div class="panel__head"><h3>操作留痕</h3><span class="hint">谁在什么时候改了什么</span></div>' +
+        auditTable(DATA.audit) +
+      '</section>';
   }
 
   /* ---------------- 视图：捐赠人门户 ---------------- */
@@ -1316,6 +1451,72 @@
     }
     if (act === 'guide') { guideModal(); return; }
     if (act === 'close-modal') { closeModal(); return; }
+
+    if (act === 'login-identity') {
+      state.auth.pick = t.getAttribute('data-identity');
+      render();
+      return;
+    }
+    if (act === 'login-fill') {
+      state.auth.draft = state.auth.pick === 'staff' ? '13800001234' : '13900005678';
+      render();
+      return;
+    }
+    if (act === 'login-submit') {
+      var raw = (($('#loginId') || {}).value || '').trim();
+      var errBox = $('#loginErr');
+      var phoneOk = /^1[3-9]\d{9}$/.test(raw);
+      var idOk = /^\d{17}[\dXx]$/.test(raw);
+      if (!raw) { if (errBox) errBox.textContent = '请输入手机号或身份证号。'; return; }
+      if (!phoneOk && !idOk) { if (errBox) errBox.textContent = '格式不正确：请输入 11 位手机号或 18 位身份证号。'; return; }
+      var pick = state.auth.pick;
+      var other = pick === 'staff' ? 'external' : 'staff';
+      var key = raw.toUpperCase();
+      var matched = BOUND_ACCOUNTS[pick][key];
+      if (!matched) {
+        if (BOUND_ACCOUNTS[other][key]) {
+          if (errBox) errBox.textContent = '该号码绑定的是「' + (other === 'staff' ? '机构工作人员' : '外部人员') + '」身份，请切换后重试。';
+        } else {
+          if (errBox) errBox.textContent = '该号码未绑定账号，请联系管理员开通（演示）。';
+        }
+        return;
+      }
+      state.auth.loggedIn = true;
+      state.auth.identity = pick;
+      state.auth.draft = raw;
+      state.auth.account = {
+        name: matched,
+        role: pick === 'staff' ? '机构工作人员' : '外部人员',
+        method: phoneOk ? '手机号' : '身份证号',
+        masked: maskLogin(raw)
+      };
+      state.role = 'admin';
+      state.view = 'dashboard';
+      render();
+      toast(pick === 'staff' ? '登录成功，已进入管理端' : '已登录（外部人员），当前为占位页', 'ok');
+      return;
+    }
+    if (act === 'logout') {
+      state.auth = { loggedIn: false, pick: 'staff', identity: 'staff', draft: '', account: null };
+      state.role = 'admin';
+      state.view = 'dashboard';
+      render();
+      toast('已退出登录');
+      return;
+    }
+    if (act === 'external-scope') {
+      openModal('外部人员权限待定',
+        '<p class="small">以下范围尚未确认，本轮不开放任何数据入口，也不臆造细规则：</p>' +
+        '<ul class="small" style="margin:10px 0 0 18px;padding:0;line-height:2">' +
+          '<li>可见哪些捐赠人档案（本人 / 本机构 / 全部）</li>' +
+          '<li>能否提交互动记录与支持意向</li>' +
+          '<li>能否查看物资去向与回馈内容</li>' +
+          '<li>是否允许导出或打印</li>' +
+        '</ul>' +
+        '<p class="hint" style="margin-top:10px">默认假设：确认前，外部人员仅能看到占位页。</p>',
+        '<button class="btn btn--primary" data-act="close-modal">知道了</button>');
+      return;
+    }
 
     if (act === 'open-new-donor') { newDonorModal(); return; }
     if (act === 'create-donor') {
@@ -1547,6 +1748,12 @@
   });
 
   document.addEventListener('input', function (e) {
+    if (e.target && e.target.id === 'loginId') {
+      state.auth.draft = e.target.value;
+      var lb = $('#loginErr');
+      if (lb) lb.textContent = '';
+      return;
+    }
     if (e.target && e.target.id === 'donorSearch') {
       state.donorQuery = e.target.value;
       var tbody = $('#donorRows');
