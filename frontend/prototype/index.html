@@ -205,6 +205,27 @@
   .wish__name{font-size:13.5px;font-weight:600}
   .wish__meta{font-size:12px;color:var(--muted)}
   .wish__bar{grid-column:1/-1}
+  .wish__head{grid-column:1/-1;display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
+  .wish__title{border:0;background:none;padding:0;text-align:left;font-family:inherit;font-size:13.5px;font-weight:650;color:var(--text);cursor:pointer}
+  .wish__title:hover{color:var(--brand)}
+  .wish-back{border:0;background:none;padding:0;color:var(--brand);font-size:12.5px;cursor:pointer;margin-bottom:6px}
+  .wish-back:hover{text-decoration:underline}
+  .wish-detail-head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap}
+  .donut-wrap{display:grid;grid-template-columns:150px 1fr;gap:24px;align-items:center}
+  .donut{position:relative;width:150px;height:150px}
+  .donut svg{display:block;width:150px;height:150px;transform:rotate(-90deg)}
+  .donut__center{position:absolute;inset:0;display:grid;place-items:center;text-align:center}
+  .donut__num{font-size:20px;font-weight:700;line-height:1.15;font-variant-numeric:tabular-nums}
+  .donut__label{font-size:11px;color:var(--muted);line-height:1.3}
+  .legend{display:flex;flex-direction:column;gap:9px}
+  .legend__item{display:flex;align-items:center;gap:8px;font-size:12.5px;min-width:0}
+  .legend__dot{width:9px;height:9px;flex:0 0 9px;border-radius:3px}
+  .legend__name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .legend__val{color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+  .mini-stats{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .mini-stat{border:1px solid var(--line);border-radius:9px;padding:10px 12px;background:#fbfcfa}
+  .mini-stat__num{font-size:18px;font-weight:700;line-height:1.25}
+  .mini-stat__label{font-size:11.5px;color:var(--muted)}
   .bars{display:flex;flex-direction:column;gap:11px}
   .bars__row{display:grid;grid-template-columns:78px 1fr 42px;gap:10px;align-items:center;font-size:12.5px;color:#4d584f}
   .bars__track{height:9px;border-radius:999px;background:#eef1ec;overflow:hidden}
@@ -290,6 +311,7 @@
     #app{padding:18px 16px 40px}
   }
   @media (max-width:600px){
+    .donut-wrap{grid-template-columns:1fr;justify-items:center}
     .stats{grid-template-columns:1fr 1fr}
     .ck{grid-template-columns:1fr}
     .steps{grid-template-columns:1fr}
@@ -426,14 +448,39 @@
     donations: [
       { id: 'n1', donorId: 'd1', date: '2026-10-20', cat: '物资', item: '绘本 20 套', wishId: 'w1', dest: '大一班图书角', feedback: '已回馈', note: '已发送到位照片与一句话反馈' },
       { id: 'n2', donorId: 'd1', date: '2026-06-01', cat: '资金', item: '现金 500 元', wishId: '', dest: '融合班级活动材料', feedback: '已回馈', note: '月度汇总中致谢' },
-      { id: 'n3', donorId: 'd2', date: '2026-08-15', cat: '物资', item: '玩具 50 套', wishId: 'w3', dest: '3 个班级（大一 / 中二 / 小一）', feedback: '待回馈', note: '物资已到账，回馈照片待发送' },
-      { id: 'n4', donorId: 'd3', date: '2026-10-28', cat: '资金', item: '项目资助 50,000 元', wishId: '', dest: '融合教师培训（定向）', feedback: '待回馈', note: '待结项材料提交后反馈' }
+      { id: 'n3', donorId: 'd2', date: '2026-08-15', cat: '物资', item: '玩具 50 套', wishId: '', dest: '3 个班级（大一 / 中二 / 小一）', feedback: '待回馈', note: '物资已到账，回馈照片待发送' },
+      { id: 'n4', donorId: 'd3', date: '2026-10-28', cat: '资金', item: '项目资助 50,000 元', wishId: '', dest: '融合教师培训（定向）', feedback: '待回馈', note: '待结项材料提交后反馈' },
+      { id: 'n5', donorId: 'd5', date: '2026-11-18', cat: '物资', item: '绘本 10 套', wishId: 'w1', dest: '大一班图书角（计划）', feedback: '未到账', note: '已登记认领，等待物资到账' }
     ],
     wishlist: [
-      { id: 'w1', name: '绘本（图书角补充）', need: 40, got: 20, unit: '套', status: '进行中' },
-      { id: 'w2', name: '户外感统器材', need: 4, got: 2, unit: '套', status: '进行中' },
-      { id: 'w3', name: '美术材料包', need: 60, got: 60, unit: '份', status: '已完成' },
-      { id: 'w4', name: '午睡床品', need: 30, got: 30, unit: '套', status: '已完成' }
+      {
+        id: 'w1', name: '绘本（图书角补充）', need: 40, got: 30, unit: '套', status: '进行中',
+        contribs: [
+          { donorId: 'd1', date: '2026-10-20', item: '绘本', qty: 20, unit: '套', status: '已到账', note: '大一班图书角' },
+          { donorId: 'd5', date: '2026-11-18', item: '绘本', qty: 10, unit: '套', status: '未到账', note: '计划 11 月底寄出' }
+        ]
+      },
+      {
+        id: 'w2', name: '户外感统器材', need: 4, got: 2, unit: '套', status: '进行中',
+        contribs: [
+          { donorId: 'd2', date: '2025-11-20', item: '户外感统器材', qty: 1, unit: '套', status: '已到账', note: '户外活动区' },
+          { donorId: 'd4', date: '2026-09-12', item: '户外感统器材', qty: 1, unit: '套', status: '已到账', note: '户外活动区' }
+        ]
+      },
+      {
+        id: 'w3', name: '美术材料包', need: 60, got: 60, unit: '份', status: '已完成',
+        contribs: [
+          { donorId: 'd2', date: '2026-08-15', item: '美术材料包', qty: 40, unit: '份', status: '已到账', note: '3 个班级' },
+          { donorId: 'd3', date: '2026-10-28', item: '美术材料包', qty: 20, unit: '份', status: '已到账', note: '美术活动室' }
+        ]
+      },
+      {
+        id: 'w4', name: '午睡床品', need: 30, got: 30, unit: '套', status: '已完成',
+        contribs: [
+          { donorId: 'd1', date: '2026-05-20', item: '午睡床品', qty: 12, unit: '套', status: '已到账', note: '午睡室' },
+          { donorId: 'd3', date: '2026-05-28', item: '午睡床品', qty: 18, unit: '套', status: '已到账', note: '午睡室' }
+        ]
+      }
     ],
     tasks: [
       { id: 't1', donorId: 'd2', title: '90 天未互动：电话问候并了解今年物资计划', due: '2026-11-23', owner: '吴冲', source: '自动规则（90 天未互动）', status: '待处理', overdue: false },
@@ -480,11 +527,11 @@
 
   var TITLES = {
     dashboard: '工作台首页', donors: '捐赠人档案', donorDetail: '捐赠人详情', import: '数据导入',
-    tasks: '待办与提醒', wishlist: '物资与心愿单', analysis: '分析视图', permissions: '权限与账号', portal: '捐赠人门户'
+    tasks: '待办与提醒', wishlist: '物资与心愿单', wishDetail: '心愿单详情', analysis: '分析视图', permissions: '权限与账号', portal: '捐赠人门户'
   };
 
   var state = {
-    role: 'admin', view: 'dashboard', donorId: 'd1', detailTab: 'timeline',
+    role: 'admin', view: 'dashboard', donorId: 'd1', detailTab: 'timeline', wishId: 'w1',
     donorQuery: '', donorType: 'all', importMapped: false, intentSent: false
   };
 
@@ -532,7 +579,7 @@
   /* ---------------- 渲染入口 ---------------- */
   function render() {
     var navs = state.role === 'admin' ? NAV_ADMIN : NAV_PORTAL;
-    var activeView = state.view === 'donorDetail' ? 'donors' : state.view;
+    var activeView = state.view === 'donorDetail' ? 'donors' : (state.view === 'wishDetail' ? 'wishlist' : state.view);
     $('#nav').innerHTML = navs.map(function (n) {
       return '<button class="nav__item' + (activeView === n.id ? ' is-active' : '') + '" data-act="view" data-view="' + n.id + '">' +
         '<span class="nav__icon">' + n.icon + '</span>' + n.label +
@@ -816,12 +863,17 @@
     var items = DATA.wishlist.map(function (w) {
       var pct = Math.round((w.got / w.need) * 100);
       return '<div class="wish">' +
-        '<div><div class="wish__name">' + esc(w.name) + '</div>' +
-        '<div class="wish__meta">已筹 ' + w.got + ' / ' + w.need + ' ' + w.unit + ' · ' + (w.status === '已完成' ? '已完成' : '进行中') + '</div></div>' +
-        '<div style="text-align:right">' +
-          (w.status === '已完成'
-            ? '<span class="tag tag--brand">已完成</span>'
-            : '<button class="btn btn--ghost btn--sm" data-act="wish-claim" data-id="' + w.id + '">登记认领</button>') +
+        '<div class="wish__head">' +
+          '<div style="min-width:0">' +
+            '<button class="wish__title" data-act="wish-detail" data-id="' + w.id + '">' + esc(w.name) + ' →</button>' +
+            '<div class="wish__meta">已筹 ' + w.got + ' / ' + w.need + ' ' + w.unit + ' · ' + (w.status === '已完成' ? '已完成' : '进行中') + '</div>' +
+          '</div>' +
+          '<div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">' +
+            (w.status === '已完成'
+              ? '<span class="tag tag--brand">已完成</span>'
+              : '<button class="btn btn--ghost btn--sm" data-act="wish-claim" data-id="' + w.id + '">登记认领</button>') +
+            '<button class="btn btn--ghost btn--sm" data-act="wish-detail" data-id="' + w.id + '">查看详情</button>' +
+          '</div>' +
         '</div>' +
         '<div class="wish__bar bar"><div class="bar__fill' + (w.status === '已完成' ? ' bar__fill--done' : '') + '" style="width:' + pct + '%"></div></div>' +
         '</div>';
@@ -831,6 +883,7 @@
     return '<section class="panel">' +
       '<div class="panel__head"><h3>心愿单</h3><span class="hint">原为半年一次的手工梳理，现按条目持续更新（F-04）</span></div>' +
       items +
+      '<p class="hint" style="margin-top:12px">点心愿单名称或「查看详情」可查看各捐赠人占比与捐赠明细。</p>' +
     '</section>' +
     '<section class="panel">' +
       '<div class="panel__head"><h3>未到账认领</h3><span class="hint">到账前不得标记已回馈</span></div>' +
@@ -841,6 +894,109 @@
             return '<tr><td class="small">' + n.date + '</td><td>' + esc(d.name) + '</td><td>' + esc(n.item) + '</td><td class="small">' + esc(n.dest) + '</td><td><span class="tag tag--danger">未到账</span></td></tr>';
           }).join('') + '</tbody></table></div>'
         : '<div class="empty">暂无未到账认领</div>') +
+    '</section>';
+  }
+
+  /* ---------------- 视图：心愿单详情 ---------------- */
+  function viewWishDetail() {
+    var w = DATA.wishlist.filter(function (x) { return x.id === state.wishId; })[0] || DATA.wishlist[0];
+    var contribs = (w.contribs || []).slice().sort(function (a, b) { return a.date < b.date ? 1 : -1; });
+    var total = contribs.reduce(function (s, c) { return s + c.qty; }, 0);
+
+    var grouped = {};
+    var order = [];
+    contribs.forEach(function (c) {
+      if (!grouped[c.donorId]) { grouped[c.donorId] = 0; order.push(c.donorId); }
+      grouped[c.donorId] += c.qty;
+    });
+
+    var COLORS = ['#1b6b57', '#2a8a70', '#7fae94', '#d98a2b', '#5b6f8f'];
+    var R = 46;
+    var CIRC = 2 * Math.PI * R;
+    var offset = 0;
+    var segs = '';
+    var legend = '';
+    order.forEach(function (id, i) {
+      var donor = donorById(id);
+      var qty = grouped[id];
+      var ratio = total ? qty / total : 0;
+      var len = CIRC * ratio;
+      segs += '<circle cx="60" cy="60" r="' + R + '" fill="none" stroke="' + COLORS[i % COLORS.length] + '" stroke-width="16" ' +
+        'stroke-dasharray="' + len.toFixed(2) + ' ' + Math.max(0, CIRC - len).toFixed(2) + '" stroke-dashoffset="' + (-offset).toFixed(2) + '"></circle>';
+      offset += len;
+      var pct = (ratio * 100).toFixed(1).replace(/\.0$/, '');
+      legend += '<div class="legend__item">' +
+        '<span class="legend__dot" style="background:' + COLORS[i % COLORS.length] + '"></span>' +
+        '<span class="legend__name">' + esc(donor.name) + '</span>' +
+        '<span class="legend__val">' + qty + ' ' + esc(w.unit) + ' · ' + pct + '%</span>' +
+        '</div>';
+    });
+
+    var unarrived = contribs.filter(function (c) { return c.status === '未到账'; }).length;
+    var pctAll = Math.round((w.got / w.need) * 100);
+    var left = Math.max(0, w.need - w.got);
+
+    var rows = contribs.length ? contribs.map(function (c, i) {
+      var donor = donorById(c.donorId);
+      var chip = c.status === '已到账' ? '<span class="tag tag--brand">已到账</span>' : '<span class="tag tag--danger">未到账</span>';
+      return '<tr>' +
+        '<td><button class="cell-link" data-act="open-donor" data-id="' + donor.id + '">' + esc(donor.name) + '</button>' +
+          '<div class="hint">' + esc(donor.type) + '</div></td>' +
+        '<td class="small">' + c.date + '</td>' +
+        '<td>' + esc(c.item) + '</td>' +
+        '<td class="small" style="white-space:nowrap">' + c.qty + ' ' + esc(c.unit) + '</td>' +
+        '<td>' + chip + '</td>' +
+        '<td class="small muted">' + esc(c.note) + '</td>' +
+        '</tr>';
+    }).join('') : '<tr><td colspan="6"><div class="empty">还没有捐赠记录，可点右上角「登记认领」</div></td></tr>';
+
+    return '<section class="panel">' +
+      '<button class="wish-back" data-act="view" data-view="wishlist">← 返回心愿单</button>' +
+      '<div class="wish-detail-head">' +
+        '<div>' +
+          '<h2 style="font-size:20px;margin:2px 0 4px">' + esc(w.name) + '</h2>' +
+          '<div class="hint">已认领 ' + w.got + ' / ' + w.need + ' ' + esc(w.unit) + ' · 完成度 ' + pctAll + '% · ' +
+            (w.status === '已完成' ? '已完成' : '进行中') + '</div>' +
+        '</div>' +
+        '<div style="display:flex;gap:8px;flex-wrap:wrap">' +
+          (w.status === '已完成' ? '<span class="tag tag--brand">已完成</span>'
+            : '<button class="btn btn--primary btn--sm" data-act="wish-claim" data-id="' + w.id + '">登记认领</button>') +
+        '</div>' +
+      '</div>' +
+      '<div class="bar" style="margin-top:16px"><div class="bar__fill' + (w.status === '已完成' ? ' bar__fill--done' : '') + '" style="width:' + pctAll + '%"></div></div>' +
+    '</section>' +
+    '<div class="cols">' +
+      '<section class="panel">' +
+        '<div class="panel__head"><h3>各捐赠人捐赠占比</h3><span class="hint">按认领数量（含未到账）计算</span></div>' +
+        (contribs.length
+          ? '<div class="donut-wrap">' +
+              '<div class="donut">' +
+                '<svg viewBox="0 0 120 120" role="img" aria-label="捐赠人占比环形图">' +
+                  '<circle cx="60" cy="60" r="' + R + '" fill="none" stroke="#eef1ec" stroke-width="16"></circle>' + segs +
+                '</svg>' +
+                '<div class="donut__center"><div><div class="donut__num">' + total + '</div>' +
+                  '<div class="donut__label">' + esc(w.unit) + ' 已认领</div></div></div>' +
+              '</div>' +
+              '<div class="legend">' + legend + '</div>' +
+            '</div>'
+          : '<div class="empty">还没有捐赠人认领</div>') +
+      '</section>' +
+      '<section class="panel">' +
+        '<div class="panel__head"><h3>概况</h3></div>' +
+        '<div class="mini-stats">' +
+          '<div class="mini-stat"><div class="mini-stat__num">' + total + ' ' + esc(w.unit) + '</div><div class="mini-stat__label">认领合计</div></div>' +
+          '<div class="mini-stat"><div class="mini-stat__num">' + order.length + '</div><div class="mini-stat__label">捐赠人数</div></div>' +
+          '<div class="mini-stat"><div class="mini-stat__num">' + unarrived + '</div><div class="mini-stat__label">未到账笔数</div></div>' +
+          '<div class="mini-stat"><div class="mini-stat__num">' + left + ' ' + esc(w.unit) + '</div><div class="mini-stat__label">剩余缺口</div></div>' +
+        '</div>' +
+        '<p class="hint" style="margin-top:12px">未到账不影响占比展示，但到账前不能标记为已回馈（F-04）。</p>' +
+      '</section>' +
+    '</div>' +
+    '<section class="panel">' +
+      '<div class="panel__head"><h3>捐赠内容明细</h3><span class="hint">图表占比与下表数量一致</span></div>' +
+      '<div class="table-scroll"><table class="table"><thead><tr>' +
+        '<th>捐赠人</th><th>捐赠日期</th><th>物品名称</th><th>数量</th><th>状态</th><th>去向 / 备注</th>' +
+      '</tr></thead><tbody>' + rows + '</tbody></table></div>' +
     '</section>';
   }
 
@@ -1012,6 +1168,7 @@
     import: viewImport,
     tasks: viewTasks,
     wishlist: viewWishlist,
+    wishDetail: viewWishDetail,
     analysis: viewAnalysis,
     permissions: viewPermissions,
     portal: viewPortal
@@ -1325,6 +1482,12 @@
       return;
     }
 
+    if (act === 'wish-detail') {
+      state.wishId = t.getAttribute('data-id');
+      state.view = 'wishDetail';
+      render();
+      return;
+    }
     if (act === 'wish-claim') { wishClaimModal(t.getAttribute('data-id')); return; }
     if (act === 'wish-submit') {
       var wid = t.getAttribute('data-id');
@@ -1334,12 +1497,15 @@
       if (!num || num < 1) { var we = $('#formErr'); if (we) we.textContent = '数量需大于 0（F-04 规则）。'; return; }
       if (num > left) { var we2 = $('#formErr'); if (we2) we2.textContent = '数量超过缺口（还缺 ' + left + ' ' + w.unit + '）。'; return; }
       var wd = ($('#wc_donor') || {}).value;
+      var wDest = ($('#wc_dest') || {}).value || '待分配';
       w.got += num;
       if (w.got >= w.need) w.status = '已完成';
+      w.contribs = w.contribs || [];
+      w.contribs.push({ donorId: wd, date: TODAY, item: w.name, qty: num, unit: w.unit, status: '未到账', note: wDest });
       DATA.donations.unshift({
         id: 'n' + (Date.now() % 100000), donorId: wd, date: TODAY, cat: '物资',
         item: w.name + ' ×' + num + ' ' + w.unit, wishId: w.id,
-        dest: ($('#wc_dest') || {}).value || '待分配', feedback: '未到账', note: '已登记认领，等待物资到账'
+        dest: wDest, feedback: '未到账', note: '已登记认领，等待物资到账'
       });
       DATA.audit.unshift({ time: '2026-11-23 13:41', user: '吴冲', target: donorById(wd).name, action: '登记认领', detail: w.name + ' ×' + num });
       closeModal(); render();
