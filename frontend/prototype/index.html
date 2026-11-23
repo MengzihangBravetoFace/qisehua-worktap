@@ -1,0 +1,1402 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>奇色花 AI 捐赠人关系维护工作台 · 原型演示</title>
+<style>
+  :root{
+    --brand:#1b6b57;
+    --brand-2:#2a8a70;
+    --brand-soft:#e8f3ee;
+    --accent:#d98a2b;
+    --accent-soft:#fdf2e3;
+    --bg:#f5f6f3;
+    --surface:#ffffff;
+    --text:#1f2620;
+    --muted:#6f776e;
+    --line:#e2e6e0;
+    --danger:#c0443a;
+    --danger-soft:#fbeae8;
+    --warn-soft:#fdf3e2;
+    --radius:12px;
+    --shadow:0 1px 2px rgba(24,40,30,.05), 0 8px 24px rgba(24,40,30,.05);
+    --font:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+  }
+  *,*::before,*::after{box-sizing:border-box}
+  body{margin:0;font-family:var(--font);background:var(--bg);color:var(--text);font-size:14px;line-height:1.65;-webkit-font-smoothing:antialiased}
+  body.no-scroll{overflow:hidden}
+  h1,h2,h3,h4{margin:0;font-weight:650;letter-spacing:-.01em}
+  p{margin:0}
+  button{font:inherit;color:inherit}
+
+  /* ============ 布局 ============ */
+  .layout{display:flex;min-height:100vh}
+  .sidebar{
+    width:236px;flex:0 0 236px;background:#fff;border-right:1px solid var(--line);
+    display:flex;flex-direction:column;padding:20px 14px;gap:18px;
+    position:sticky;top:0;height:100vh;
+  }
+  .brand{display:flex;align-items:center;gap:10px;padding:0 6px}
+  .brand__logo{
+    width:36px;height:36px;flex:0 0 36px;border-radius:10px;
+    background:linear-gradient(140deg,var(--brand),var(--brand-2));
+    color:#fff;display:grid;place-items:center;font-weight:700;font-size:16px;
+  }
+  .brand__name{font-weight:700;font-size:15px;line-height:1.2}
+  .brand__sub{font-size:11.5px;color:var(--muted);line-height:1.3}
+  .role-switch{display:flex;background:#f1f3ef;border-radius:9px;padding:3px;gap:2px}
+  .role-switch__btn{
+    flex:1;border:0;background:none;border-radius:7px;padding:6px 4px;font-size:12.5px;
+    color:var(--muted);cursor:pointer;transition:all .18s ease;
+  }
+  .role-switch__btn.is-active{background:#fff;color:var(--brand);font-weight:600;box-shadow:0 1px 2px rgba(0,0,0,.06)}
+  .nav{display:flex;flex-direction:column;gap:2px}
+  .nav__item{
+    display:flex;align-items:center;gap:9px;border:0;background:none;text-align:left;
+    padding:8px 10px;border-radius:8px;color:#45504a;cursor:pointer;font-size:13.5px;
+    transition:background .15s ease,color .15s ease;
+  }
+  .nav__item:hover{background:#f4f6f2}
+  .nav__item.is-active{background:var(--brand-soft);color:var(--brand);font-weight:600}
+  .nav__icon{width:16px;text-align:center;font-size:13px;opacity:.85}
+  .nav__badge{margin-left:auto;font-size:10.5px;background:var(--accent-soft);color:#a8691a;border-radius:999px;padding:0 6px;line-height:16px}
+  .sidebar__foot{
+    margin-top:auto;display:flex;gap:9px;align-items:center;
+    border-top:1px solid var(--line);padding:14px 6px 0;
+  }
+  .avatar{width:30px;height:30px;flex:0 0 30px;border-radius:50%;background:#eef2ed;display:grid;place-items:center;font-size:12.5px;font-weight:600;color:#4a5a4f}
+  .side-user{font-size:13px;font-weight:600;line-height:1.3}
+  .side-role{font-size:11.5px;color:var(--muted);line-height:1.3}
+
+  .main{flex:1;min-width:0;display:flex;flex-direction:column}
+  .topbar{
+    display:flex;align-items:center;justify-content:space-between;gap:12px;
+    padding:14px 28px;background:rgba(255,255,255,.85);border-bottom:1px solid var(--line);
+    position:sticky;top:0;z-index:20;backdrop-filter:blur(6px);
+  }
+  .crumb{font-size:12.5px;color:var(--muted)}
+  .crumb strong{color:var(--text);font-weight:600}
+  .crumb span{margin:0 6px;color:#c2c8c0}
+  .topbar__right{display:flex;align-items:center;gap:10px}
+  .notice{
+    margin:0;padding:9px 28px;font-size:12px;color:#7a6a4e;background:#fdf7ec;
+    border-bottom:1px solid #f2e6cf;
+  }
+  #app{padding:24px 28px 56px;max-width:1220px;width:100%}
+
+  /* ============ 通用组件 ============ */
+  .panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px 20px;margin-bottom:18px}
+  .panel__head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px;flex-wrap:wrap}
+  .panel__head h3{font-size:15px}
+  .muted{color:var(--muted)}
+  .small{font-size:12.5px}
+  .link{border:0;background:none;color:var(--brand);font-size:12.5px;cursor:pointer;padding:2px 4px;border-radius:6px}
+  .link:hover{background:var(--brand-soft)}
+  .btn{
+    border:1px solid transparent;border-radius:8px;padding:8px 14px;font-size:13.5px;font-weight:600;
+    cursor:pointer;background:#fff;transition:all .16s ease;display:inline-flex;align-items:center;gap:6px;
+  }
+  .btn:active{transform:translateY(1px)}
+  .btn--primary{background:var(--brand);color:#fff;box-shadow:0 4px 10px rgba(27,107,87,.18)}
+  .btn--primary:hover{background:#175a4a}
+  .btn--ghost{border-color:var(--line);color:#46524b}
+  .btn--ghost:hover{border-color:#cfd6cd;background:#fafbf9}
+  .btn--danger{background:#fff;border-color:#ecc9c4;color:var(--danger)}
+  .btn--danger:hover{background:#fdf5f4}
+  .btn--sm{padding:5px 10px;font-size:12.5px;border-radius:7px}
+  .btn:disabled{opacity:.45;cursor:not-allowed}
+  .input,select.input,textarea.input{
+    width:100%;border:1px solid #d8ded5;border-radius:8px;padding:8px 10px;font:inherit;font-size:13.5px;
+    background:#fff;color:var(--text);outline:none;transition:border .15s ease, box-shadow .15s ease;
+  }
+  .input:focus{border-color:var(--brand-2);box-shadow:0 0 0 3px rgba(42,138,112,.12)}
+  textarea.input{resize:vertical;min-height:78px;line-height:1.6}
+  label.field{display:block;margin-bottom:12px}
+  label.field > span{display:block;font-size:12.5px;color:#5b675f;margin-bottom:5px}
+  .req{color:var(--danger)}
+  .hint{font-size:12px;color:var(--muted)}
+  .tag{display:inline-block;font-size:11px;padding:1px 7px;border-radius:999px;background:#f0f2ee;color:#5b665e;line-height:18px;white-space:nowrap}
+  .tag--brand{background:var(--brand-soft);color:var(--brand)}
+  .tag--warn{background:var(--warn-soft);color:#a8691a}
+  .tag--danger{background:var(--danger-soft);color:var(--danger)}
+  .tag--ai{background:#eef0fb;color:#4b57a8}
+  .tag--demo{background:#eef0fb;color:#4b57a8}
+  .table{width:100%;border-collapse:collapse;font-size:13px}
+  .table th{
+    text-align:left;font-weight:600;font-size:12px;color:#78827a;padding:8px 10px;
+    border-bottom:1px solid var(--line);white-space:nowrap;background:#fafbf9;
+  }
+  .table td{padding:10px;border-bottom:1px solid #eef0ec;vertical-align:top}
+  .table tr:last-child td{border-bottom:0}
+  .table tr:hover td{background:#fcfdfb}
+  .table-scroll{overflow-x:auto;margin:0 -4px}
+  .table a,.cell-link{border:0;background:none;padding:0;color:var(--text);font-weight:600;cursor:pointer;text-align:left}
+  .cell-link:hover{color:var(--brand)}
+  .cols{display:grid;grid-template-columns:1.35fr 1fr;gap:18px;align-items:start}
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:18px}
+  .stat{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px;box-shadow:var(--shadow)}
+  .stat__label{font-size:12px;color:var(--muted)}
+  .stat__value{font-size:26px;font-weight:700;letter-spacing:-.02em;margin:2px 0 0;line-height:1.2}
+  .stat__hint{font-size:11.5px;color:#98a097}
+  .stat--warn .stat__value{color:#a8691a}
+  .stat--danger .stat__value{color:var(--danger)}
+  .empty{padding:26px;text-align:center;color:var(--muted);font-size:13px}
+
+  /* ============ 待办 ============ */
+  .task{display:flex;gap:12px;align-items:flex-start;padding:12px 4px;border-bottom:1px solid #eff1ed}
+  .task:last-child{border-bottom:0}
+  .task__check{
+    width:18px;height:18px;flex:0 0 18px;border-radius:5px;border:1.5px solid #c6cec4;margin-top:3px;background:#fff;
+    cursor:pointer;display:grid;place-items:center;font-size:11px;color:transparent;transition:all .15s ease;
+  }
+  .task__check:hover{border-color:var(--brand-2);color:var(--brand-2)}
+  .task__main{flex:1;min-width:0}
+  .task__title{font-size:13.5px;font-weight:600;line-height:1.5}
+  .task__meta{font-size:12px;color:var(--muted);display:flex;flex-wrap:wrap;gap:8px;margin-top:2px}
+  .task__ops{display:flex;gap:6px;align-items:center}
+  .task.is-done{opacity:.55}
+  .task.is-done .task__title{text-decoration:line-through}
+
+  /* ============ 流程说明 ============ */
+  .flow{list-style:none;margin:0;padding:0;counter-reset:step}
+  .flow li{
+    position:relative;padding:9px 0 9px 30px;border-bottom:1px dashed #e8ebe6;font-size:13px;
+    display:flex;justify-content:space-between;gap:10px;align-items:center;
+  }
+  .flow li:last-child{border-bottom:0}
+  .flow li::before{
+    counter-increment:step;content:counter(step);
+    position:absolute;left:0;top:11px;width:20px;height:20px;border-radius:50%;
+    background:var(--brand-soft);color:var(--brand);font-size:11px;font-weight:700;
+    display:grid;place-items:center;
+  }
+
+  /* ============ 详情 ============ */
+  .detail-hero{display:flex;justify-content:space-between;gap:18px;flex-wrap:wrap;align-items:flex-start}
+  .detail-hero h2{font-size:21px;margin:1px 0 4px}
+  .detail-hero__meta{display:flex;gap:8px;flex-wrap:wrap;align-items:center;font-size:12.5px;color:var(--muted)}
+  .detail-hero__ops{display:flex;gap:8px;flex-wrap:wrap}
+  .info-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px 20px;margin-top:16px;padding-top:16px;border-top:1px solid var(--line)}
+  .info-grid .k{font-size:11.5px;color:#8b948c}
+  .info-grid .v{font-size:13.5px;font-weight:500}
+  .history-note{margin-top:14px;background:#fafbf8;border:1px dashed #dfe4db;border-radius:9px;padding:10px 12px;font-size:12.5px;color:#5f6a62}
+  .tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:16px}
+  .tab{border:0;background:none;padding:9px 12px;font-size:13.5px;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px}
+  .tab.is-active{color:var(--brand);border-bottom-color:var(--brand);font-weight:600}
+
+  /* 时间线 */
+  .tl{list-style:none;margin:0;padding:0}
+  .tl__item{position:relative;padding:0 0 18px 22px;border-left:1.5px solid #e6eae3;margin-left:5px}
+  .tl__item:last-child{border-left-color:transparent;padding-bottom:0}
+  .tl__dot{position:absolute;left:-6px;top:6px;width:10px;height:10px;border-radius:50%;background:#fff;border:2.5px solid var(--brand-2)}
+  .tl__item.is-system .tl__dot{border-color:#b7c0b6;background:#f1f3ef}
+  .tl__item.is-ai .tl__dot{border-color:#6b76c4}
+  .tl__meta{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:11.5px;color:var(--muted);margin-bottom:3px}
+  .tl__item p{margin:0;font-size:13.5px;color:#2c352e}
+  .promise{margin-top:7px;background:var(--warn-soft);border-left:3px solid #e0a94f;border-radius:0 7px 7px 0;padding:6px 10px;font-size:12.5px;color:#7a5a1f;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+
+  /* ============ 状态/进度 ============ */
+  .bar{height:7px;border-radius:999px;background:#eef1ec;overflow:hidden}
+  .bar__fill{height:100%;border-radius:999px;background:linear-gradient(90deg,var(--brand-2),var(--brand))}
+  .bar__fill--done{background:#9fb4a6}
+  .wish{display:grid;grid-template-columns:1fr auto;gap:8px 16px;padding:14px 0;border-bottom:1px solid #eff1ed}
+  .wish:last-child{border-bottom:0}
+  .wish__name{font-size:13.5px;font-weight:600}
+  .wish__meta{font-size:12px;color:var(--muted)}
+  .wish__bar{grid-column:1/-1}
+  .bars{display:flex;flex-direction:column;gap:11px}
+  .bars__row{display:grid;grid-template-columns:78px 1fr 42px;gap:10px;align-items:center;font-size:12.5px;color:#4d584f}
+  .bars__track{height:9px;border-radius:999px;background:#eef1ec;overflow:hidden}
+  .bars__fill{height:100%;border-radius:999px;background:var(--brand-2);opacity:.8}
+  .bars__num{text-align:right;color:var(--muted);font-variant-numeric:tabular-nums}
+
+  /* ============ 导入 ============ */
+  .dropzone{
+    border:1.5px dashed #cfd8cc;border-radius:10px;padding:22px;text-align:center;background:#fbfcfa;
+  }
+  .dropzone strong{display:block;font-size:13.5px;margin-bottom:3px}
+  .file-chip{display:inline-flex;align-items:center;gap:8px;background:#f1f4ef;border:1px solid var(--line);border-radius:8px;padding:6px 10px;font-size:12.5px;margin-top:10px}
+  .map-row{display:grid;grid-template-columns:1fr 24px 1fr;gap:8px;align-items:center;margin-bottom:8px}
+  .map-row .arrow{text-align:center;color:#aab3a9;font-size:12px}
+  .ck{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:14px 0}
+  .ck__box{border:1px solid var(--line);border-radius:9px;padding:10px 12px;background:#fbfcfa}
+  .ck__num{font-size:19px;font-weight:700;line-height:1.2}
+  .ck__label{font-size:11.5px;color:var(--muted)}
+  .ck__box--warn .ck__num{color:#a8691a}
+  .ck__box--danger .ck__num{color:var(--danger)}
+
+  /* ============ 捐赠人端 ============ */
+  .portal-hero{
+    background:linear-gradient(135deg,#1b6b57,#2a8a70);color:#fff;border-radius:14px;padding:22px 24px;margin-bottom:18px;
+    display:flex;justify-content:space-between;gap:18px;flex-wrap:wrap;align-items:flex-end;box-shadow:var(--shadow);
+  }
+  .portal-hero h2{font-size:20px;margin-bottom:4px}
+  .portal-hero p{font-size:12.5px;opacity:.85}
+  .portal-hero__stats{display:flex;gap:26px}
+  .portal-hero__num{font-size:22px;font-weight:700;line-height:1.2}
+  .portal-hero__label{font-size:11.5px;opacity:.8}
+  .donation-card{border:1px solid var(--line);border-radius:11px;padding:16px;margin-bottom:14px;background:#fff}
+  .donation-card__head{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:flex-start;margin-bottom:12px}
+  .donation-card__title{font-size:14.5px;font-weight:650}
+  .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:6px}
+  .step{position:relative;background:#fafbf8;border:1px solid #edf0ea;border-radius:8px;padding:9px 10px}
+  .step__label{font-size:10.5px;color:#8b948c;letter-spacing:.02em}
+  .step__text{font-size:12.5px;line-height:1.5;margin-top:1px}
+  .step--done{border-color:#d9e7df;background:#f6faf7}
+  .step--done .step__label{color:var(--brand)}
+  .portal-foot{font-size:12px;color:var(--muted);text-align:center;padding:6px 0 0}
+  .success-card{background:#f5faf6;border:1px solid #d7e8dd;border-radius:11px;padding:18px}
+  .success-card h3{font-size:14.5px;color:var(--brand);margin-bottom:5px}
+
+  /* ============ 弹窗 / 提示 ============ */
+  .modal{position:fixed;inset:0;z-index:80;display:grid;place-items:center;padding:20px;visibility:hidden;transition:visibility 0s linear .2s}
+  .modal.is-open{visibility:visible;transition-delay:0s}
+  .modal__mask{position:absolute;inset:0;background:rgba(22,32,26,.42);opacity:0;transition:opacity .2s ease}
+  .modal.is-open .modal__mask{opacity:1}
+  .modal__box{
+    position:relative;width:min(560px,100%);max-height:86vh;overflow-y:auto;background:#fff;border-radius:14px;
+    box-shadow:0 24px 64px rgba(18,30,23,.24);opacity:0;transform:translateY(12px) scale(.985);
+    transition:opacity .2s ease, transform .2s ease;
+  }
+  .modal.is-open .modal__box{opacity:1;transform:none}
+  .modal__head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:18px 20px 10px}
+  .modal__head h3{font-size:16px}
+  .modal__x{border:0;background:none;font-size:22px;line-height:1;color:#98a097;cursor:pointer;border-radius:6px;width:28px;height:28px}
+  .modal__x:hover{background:#f2f4f0;color:var(--text)}
+  .modal__body{padding:0 20px 4px}
+  .modal__foot{display:flex;justify-content:flex-end;gap:8px;padding:14px 20px 18px;flex-wrap:wrap}
+  .form-err{color:var(--danger);font-size:12.5px;min-height:18px;margin-bottom:4px}
+  .toast{
+    position:fixed;left:50%;bottom:26px;z-index:90;transform:translate(-50%,12px);opacity:0;pointer-events:none;
+    background:#22302a;color:#fff;font-size:13px;padding:9px 16px;border-radius:999px;box-shadow:0 10px 26px rgba(0,0,0,.2);
+    transition:opacity .18s ease, transform .18s ease;max-width:calc(100vw - 40px);text-align:center;
+  }
+  .toast.is-show{opacity:1;transform:translate(-50%,0)}
+  .toast--danger{background:#8f2f27}
+  .toast--ok{background:#1b6b57}
+
+  @media (max-width:1080px){ .cols{grid-template-columns:1fr} .stats{grid-template-columns:repeat(2,1fr)} }
+  @media (max-width:920px){
+    .layout{flex-direction:column}
+    .sidebar{width:auto;flex:none;height:auto;position:static;flex-direction:row;align-items:center;gap:10px;overflow-x:auto;padding:10px 14px;border-right:0;border-bottom:1px solid var(--line)}
+    .brand__sub{display:none}
+    .role-switch{flex:0 0 auto;margin-left:auto}
+    .nav{flex-direction:row;gap:2px;overflow-x:auto}
+    .nav__item{white-space:nowrap;padding:6px 9px}
+    .sidebar__foot{display:none}
+    .topbar{padding:12px 16px}
+    .notice{padding:8px 16px}
+    #app{padding:18px 16px 40px}
+  }
+  @media (max-width:600px){
+    .stats{grid-template-columns:1fr 1fr}
+    .ck{grid-template-columns:1fr}
+    .steps{grid-template-columns:1fr}
+    .map-row{grid-template-columns:1fr;gap:4px}
+    .map-row .arrow{display:none}
+    .portal-hero__stats{gap:18px}
+  }
+  @media (prefers-reduced-motion:reduce){ *{transition-duration:.001ms !important} }
+</style>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand__logo">七</div>
+      <div>
+        <div class="brand__name">奇色花</div>
+        <div class="brand__sub">捐赠人关系维护工作台</div>
+      </div>
+    </div>
+    <div class="role-switch">
+      <button class="role-switch__btn is-active" data-act="role" data-role="admin" id="roleAdmin">管理端</button>
+      <button class="role-switch__btn" data-act="role" data-role="portal" id="rolePortal">捐赠人端</button>
+    </div>
+    <nav class="nav" id="nav"></nav>
+    <div class="sidebar__foot">
+      <div class="avatar" id="sideAvatar">吴</div>
+      <div>
+        <div class="side-user" id="sideUser">吴冲</div>
+        <div class="side-role" id="sideRole">传播筹资负责人 · 实名</div>
+      </div>
+    </div>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <div class="crumb">奇色花 · 关系维护工作台 <span>/</span> <strong id="crumbTitle">工作台首页</strong></div>
+      <div class="topbar__right">
+        <span class="tag tag--demo">演示原型</span>
+        <button class="btn btn--ghost btn--sm" data-act="guide">演示导览</button>
+      </div>
+    </header>
+    <div class="notice">原型演示：页面数据均为示例（已做脱敏示意），不含真实后端、数据库与 AI 调用；政府类主体整条不入库。</div>
+    <main id="app"></main>
+  </div>
+</div>
+
+<div class="modal" id="modal" aria-hidden="true">
+  <div class="modal__mask" data-act="close-modal"></div>
+  <div class="modal__box" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal__head">
+      <h3 id="modalTitle">标题</h3>
+      <button class="modal__x" data-act="close-modal" aria-label="关闭">&times;</button>
+    </div>
+    <div class="modal__body" id="modalBody"></div>
+    <div class="modal__foot" id="modalFoot"></div>
+  </div>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+/* =========================================================
+   奇色花 AI 捐赠人关系维护工作台 · 单文件原型
+   管理端：档案 / 导入 / AI 记录 / 时间线 / 待办 / 物资 / 分析 / 权限
+   捐赠人端：我的捐赠与物资去向 / 支持意向
+   ========================================================= */
+(function () {
+  'use strict';
+
+  var TODAY = '2026-11-23';
+
+  /* ---------------- 示例数据（均脱敏示意） ---------------- */
+  var DATA = {
+    donors: [
+      {
+        id: 'd1', name: '李静', type: '爱心个人', contact: '李静',
+        title: '志愿者（2025 起）', titleHistory: [{ title: '家长', from: '2023-09', to: '2025-06' }],
+        phone: '138****6721', source: '公众号读者 · 主动来访', industry: '—', method: '物资 + 小额资金',
+        lastContact: '2026-11-02', owner: '吴冲', region: '郑州',
+        note: '关注融合班级绘本阅读，愿意长期参与；回馈偏好图文而非长报告。'
+      },
+      {
+        id: 'd2', name: '郑州明远建设有限公司', type: '爱心企业', contact: '王海涛',
+        title: '行政总监', titleHistory: [{ title: '行政专员', from: '2024-04', to: '2025-11' }],
+        phone: '0371-****8802', source: '吴冲 · 2024 年行业活动结识', industry: '建筑', method: '物资',
+        lastContact: '2026-08-15', owner: '吴冲', region: '郑州',
+        note: '每年秋季有物资捐赠习惯；2025 年捐玩具 50 套，2026 年尚未联系。'
+      },
+      {
+        id: 'd3', name: '河南同心教育基金会', type: '基金会', contact: '陈璐',
+        title: '项目官员', titleHistory: [{ title: '项目助理', from: '2023-03', to: '2025-01' }],
+        phone: '186****3305', source: '省融合教育论坛 · 2023', industry: '教育公益', method: '项目制资助',
+        lastContact: '2026-10-28', owner: '吴冲', region: '郑州',
+        note: '2026 年融合教师培训项目资助方；结项材料承诺 12 月前提交。'
+      },
+      {
+        id: 'd4', name: '张敏', type: '学者', contact: '张敏',
+        title: '郑州大学学前教育系 · 讲师', titleHistory: [],
+        phone: '139****0812', source: '高校合作 · 2025 督导', industry: '高校', method: '专业支持（培训 / 督导）',
+        lastContact: '2026-09-12', owner: '顾佳怡', region: '郑州',
+        note: '可提供教师督导与课程建议，适合 12 月教师培训邀约。'
+      },
+      {
+        id: 'd5', name: '星火社区服务中心', type: '爱心企业', contact: '刘楠',
+        title: '中心主任', titleHistory: [],
+        phone: '0371-****2266', source: '社区亲子活动合作', industry: '社区服务', method: '物资 + 志愿服务',
+        lastContact: '2026-06-20', owner: '吴冲', region: '郑州',
+        note: '仅 1 条互动记录，合作一次后无联系；暂不输出维护结论。'
+      }
+    ],
+    timeline: {
+      d1: [
+        { date: '2026-11-02', kind: '电话沟通', by: '吴冲', text: '聊孩子近况，提到融合班绘本角想再补一批绘本，对图文回馈接受度高。', promise: '11 月底前寄出绘本 20 套', overdue: false },
+        { date: '2026-10-20', kind: '物资捐赠', by: '顾佳怡', text: '绘本 20 套入库，已分配至大一班图书角，照片存档。' },
+        { date: '2026-10-18', kind: '微信沟通', by: '吴冲', text: '确认心愿单绘本规格与收货地址。' },
+        { date: '2026-09-15', kind: '档案变更', by: '吴冲', system: true, text: '职务由「家长」更新为「志愿者（2025 起）」；旧职务已保留，可查历史身份。' },
+        { date: '2026-09-12', kind: 'AI 记录确认', by: '吴冲', ai: true, text: 'AI 从一段微信语音中提取：愿意每月参与一次班级阅读活动；人工确认后入库。' }
+      ],
+      d2: [
+        { date: '2026-08-15', kind: '物资捐赠', by: '吴冲', text: '捐赠玩具 50 套，已到账并分配至 3 个班级；回馈照片尚未发送。' },
+        { date: '2025-11-20', kind: '活动交流', by: '吴冲', text: '参加园所开放日，表达继续支持意愿，提到年底预算可能在 10 月后确定。' }
+      ],
+      d3: [
+        { date: '2026-10-28', kind: '项目沟通', by: '吴冲', text: '确认 2026 年融合教师培训项目资助 5 万元，约定 12 月前提交结项材料。', promise: '12 月前提交结项材料', overdue: true },
+        { date: '2026-09-20', kind: '会议', by: '吴冲', text: '在省融合教育论坛期间与陈璐当面沟通项目方向，对方关注教师培训覆盖率。' }
+      ],
+      d4: [
+        { date: '2026-09-12', kind: '培训', by: '顾佳怡', text: '受邀为融合班级教师做一次督导，反馈积极，表示可继续参与 12 月培训。' }
+      ],
+      d5: [
+        { date: '2026-06-20', kind: '活动交流', by: '吴冲', text: '合作一次社区亲子活动，提供志愿者 8 人；此后无联系。' }
+      ]
+    },
+    donations: [
+      { id: 'n1', donorId: 'd1', date: '2026-10-20', cat: '物资', item: '绘本 20 套', wishId: 'w1', dest: '大一班图书角', feedback: '已回馈', note: '已发送到位照片与一句话反馈' },
+      { id: 'n2', donorId: 'd1', date: '2026-06-01', cat: '资金', item: '现金 500 元', wishId: '', dest: '融合班级活动材料', feedback: '已回馈', note: '月度汇总中致谢' },
+      { id: 'n3', donorId: 'd2', date: '2026-08-15', cat: '物资', item: '玩具 50 套', wishId: 'w3', dest: '3 个班级（大一 / 中二 / 小一）', feedback: '待回馈', note: '物资已到账，回馈照片待发送' },
+      { id: 'n4', donorId: 'd3', date: '2026-10-28', cat: '资金', item: '项目资助 50,000 元', wishId: '', dest: '融合教师培训（定向）', feedback: '待回馈', note: '待结项材料提交后反馈' }
+    ],
+    wishlist: [
+      { id: 'w1', name: '绘本（图书角补充）', need: 40, got: 20, unit: '套', status: '进行中' },
+      { id: 'w2', name: '户外感统器材', need: 4, got: 2, unit: '套', status: '进行中' },
+      { id: 'w3', name: '美术材料包', need: 60, got: 60, unit: '份', status: '已完成' },
+      { id: 'w4', name: '午睡床品', need: 30, got: 30, unit: '套', status: '已完成' }
+    ],
+    tasks: [
+      { id: 't1', donorId: 'd2', title: '90 天未互动：电话问候并了解今年物资计划', due: '2026-11-23', owner: '吴冲', source: '自动规则（90 天未互动）', status: '待处理', overdue: false },
+      { id: 't2', donorId: 'd3', title: '提交 2026 年融合教师培训项目结项材料', due: '2026-11-20', owner: '吴冲', source: '承诺事项', status: '待处理', overdue: true },
+      { id: 't3', donorId: 'd1', title: '发送绘本到位照片与一句话回馈', due: '2026-11-24', owner: '顾佳怡', source: '捐赠回馈', status: '待处理', overdue: false },
+      { id: 't4', donorId: 'd4', title: '邀请张敏参加 12 月教师督导', due: '2026-11-27', owner: '顾佳怡', source: '手动创建', status: '待处理', overdue: false }
+    ],
+    accounts: [
+      { name: '吴冲', role: '管理员', real: '已实名', scope: '全部档案与设置', status: '启用' },
+      { name: '顾佳怡', role: '编辑', real: '已实名', scope: '档案编辑 · 物资与回馈', status: '启用' },
+      { name: '李明', role: '查看', real: '未实名', scope: '仅查看，不可上传', status: '限制中' },
+      { name: '张园长', role: '编辑', real: '待实名', scope: '档案编辑（待开通）', status: '待激活' }
+    ],
+    audit: [
+      { time: '2026-11-23 09:14', user: '吴冲', target: '李静', action: '新增互动记录', detail: '电话沟通 · 含承诺事项 1 条' },
+      { time: '2026-11-22 17:40', user: '顾佳怡', target: '郑州明远建设', action: '更新捐赠去向', detail: '玩具 50 套 → 3 个班级' },
+      { time: '2026-11-22 10:02', user: '吴冲', target: '李明', action: '账号限制', detail: '未实名账号不可上传信息（F-07）' },
+      { time: '2026-11-21 15:26', user: '吴冲', target: '河南同心教育基金会', action: '档案变更', detail: '联系人职务：项目助理 → 项目官员（旧职务保留）' }
+    ],
+    mapping: [
+      { excel: '单位名称', field: '单位 / 名称' },
+      { excel: '联系人', field: '联系人' },
+      { excel: '联系电话', field: '手机号（脱敏后仅授权人可见）' },
+      { excel: '职务', field: '当前职务' },
+      { excel: '资源类型', field: '资源类型' },
+      { excel: '介绍人', field: '来源介绍人' },
+      { excel: '沟通记录', field: null }
+    ]
+  };
+
+  var FIELD_OPTIONS = ['单位 / 名称', '联系人', '手机号（脱敏后仅授权人可见）', '当前职务', '资源类型', '来源介绍人', '备注（沟通摘要）', '暂不导入'];
+  var DONOR_TYPES = ['基金会', '爱心企业', '爱心个人', '学者'];
+
+  var NAV_ADMIN = [
+    { id: 'dashboard', label: '工作台首页', icon: '▦' },
+    { id: 'donors', label: '捐赠人档案', icon: '◍' },
+    { id: 'import', label: '数据导入', icon: '⇪' },
+    { id: 'tasks', label: '待办与提醒', icon: '✓' },
+    { id: 'wishlist', label: '物资与心愿单', icon: '◇' },
+    { id: 'analysis', label: '分析视图', icon: '▤', badge: 'P1' },
+    { id: 'permissions', label: '权限与账号', icon: '⚿' }
+  ];
+  var NAV_PORTAL = [{ id: 'portal', label: '我的捐赠', icon: '♥' }];
+
+  var TITLES = {
+    dashboard: '工作台首页', donors: '捐赠人档案', donorDetail: '捐赠人详情', import: '数据导入',
+    tasks: '待办与提醒', wishlist: '物资与心愿单', analysis: '分析视图', permissions: '权限与账号', portal: '捐赠人门户'
+  };
+
+  var state = {
+    role: 'admin', view: 'dashboard', donorId: 'd1', detailTab: 'timeline',
+    donorQuery: '', donorType: 'all', importMapped: false, intentSent: false
+  };
+
+  /* ---------------- 工具 ---------------- */
+  function $(sel) { return document.querySelector(sel); }
+  function donorById(id) { return DATA.donors.filter(function (d) { return d.id === id; })[0]; }
+  function taskById(id) { return DATA.tasks.filter(function (t) { return t.id === id; })[0]; }
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+  function daysSince(dateStr) {
+    var a = new Date(dateStr + 'T00:00:00');
+    var b = new Date(TODAY + 'T00:00:00');
+    return Math.round((b - a) / 86400000);
+  }
+  var toastTimer = null;
+  function toast(msg, tone) {
+    var el = $('#toast');
+    el.textContent = msg;
+    el.className = 'toast is-show' + (tone ? ' toast--' + tone : '');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { el.className = 'toast'; }, 2800);
+  }
+  function openModal(title, body, foot) {
+    $('#modalTitle').textContent = title;
+    $('#modalBody').innerHTML = body;
+    $('#modalFoot').innerHTML = foot || '<button class="btn btn--ghost" data-act="close-modal">关闭</button>';
+    $('#modal').classList.add('is-open');
+    $('#modal').setAttribute('aria-hidden', 'false');
+    document.body.classList.add('no-scroll');
+  }
+  function closeModal() {
+    $('#modal').classList.remove('is-open');
+    $('#modal').setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('no-scroll');
+  }
+  function options(list, selected) {
+    return list.map(function (o) {
+      return '<option value="' + esc(o) + '"' + (o === selected ? ' selected' : '') + '>' + esc(o) + '</option>';
+    }).join('');
+  }
+
+  /* ---------------- 渲染入口 ---------------- */
+  function render() {
+    var navs = state.role === 'admin' ? NAV_ADMIN : NAV_PORTAL;
+    var activeView = state.view === 'donorDetail' ? 'donors' : state.view;
+    $('#nav').innerHTML = navs.map(function (n) {
+      return '<button class="nav__item' + (activeView === n.id ? ' is-active' : '') + '" data-act="view" data-view="' + n.id + '">' +
+        '<span class="nav__icon">' + n.icon + '</span>' + n.label +
+        (n.badge ? '<span class="nav__badge">' + n.badge + '</span>' : '') + '</button>';
+    }).join('');
+    $('#roleAdmin').classList.toggle('is-active', state.role === 'admin');
+    $('#rolePortal').classList.toggle('is-active', state.role === 'portal');
+    $('#crumbTitle').textContent = TITLES[state.view] || '工作台首页';
+    if (state.role === 'portal') {
+      $('#sideAvatar').textContent = '李';
+      $('#sideUser').textContent = '李静';
+      $('#sideRole').textContent = '爱心个人 · 捐赠人端';
+    } else {
+      $('#sideAvatar').textContent = '吴';
+      $('#sideUser').textContent = '吴冲';
+      $('#sideRole').textContent = '传播筹资负责人 · 实名';
+    }
+    var fn = VIEWS[state.view] || VIEWS.dashboard;
+    $('#app').innerHTML = fn();
+    window.scrollTo({ top: 0 });
+  }
+
+  /* ---------------- 公共片段 ---------------- */
+  function statCard(label, value, hint, tone) {
+    return '<div class="stat' + (tone ? ' stat--' + tone : '') + '">' +
+      '<div class="stat__label">' + label + '</div>' +
+      '<div class="stat__value">' + value + '</div>' +
+      '<div class="stat__hint">' + hint + '</div></div>';
+  }
+  function statusChip(d) {
+    var gap = daysSince(d.lastContact);
+    if (gap >= 90) return '<span class="tag tag--warn">' + gap + ' 天未联系</span>';
+    return '<span class="tag">正常</span>';
+  }
+  function donorRow(d) {
+    return '<tr>' +
+      '<td><button class="cell-link" data-act="open-donor" data-id="' + d.id + '">' + esc(d.name) + '</button>' +
+      (d.name !== d.contact ? '<div class="hint">' + esc(d.contact) + '</div>' : '') + '</td>' +
+      '<td><span class="tag tag--brand">' + d.type + '</span></td>' +
+      '<td>' + esc(d.contact) + '<div class="hint">' + esc(d.title) + '</div></td>' +
+      '<td class="small muted">' + esc(d.source) + '</td>' +
+      '<td class="small">' + d.lastContact + '</td>' +
+      '<td class="small">' + esc(d.owner) + '</td>' +
+      '<td>' + statusChip(d) + '</td>' +
+      '<td style="text-align:right"><button class="link" data-act="open-donor" data-id="' + d.id + '">查看 →</button></td>' +
+      '</tr>';
+  }
+  function taskRow(t) {
+    var d = donorById(t.donorId);
+    return '<div class="task' + (t.status === '已完成' ? ' is-done' : '') + '" data-task="' + t.id + '">' +
+      '<button class="task__check" data-act="task-finish" data-id="' + t.id + '" title="完成并回填">' + (t.status === '已完成' ? '✓' : '') + '</button>' +
+      '<div class="task__main">' +
+        '<div class="task__title">' + esc(t.title) + '</div>' +
+        '<div class="task__meta">' +
+          '<button class="cell-link small" data-act="open-donor" data-id="' + d.id + '">' + esc(d.name) + '</button>' +
+          '<span>截止 ' + t.due + '</span>' +
+          '<span>负责人 ' + esc(t.owner) + '</span>' +
+          '<span class="tag">' + esc(t.source) + '</span>' +
+          (t.overdue ? '<span class="tag tag--danger">已逾期</span>' : '') +
+        '</div>' +
+      '</div>' +
+      '<div class="task__ops"><button class="btn btn--ghost btn--sm" data-act="task-finish" data-id="' + t.id + '">' + (t.status === '已完成' ? '已回填' : '完成') + '</button></div>' +
+      '</div>';
+  }
+  function auditTable(rows) {
+    return '<div class="table-scroll"><table class="table"><thead><tr><th>时间</th><th>操作人</th><th>对象</th><th>动作</th><th>详情</th></tr></thead><tbody>' +
+      rows.map(function (r) {
+        return '<tr><td class="small muted">' + r.time + '</td><td>' + esc(r.user) + '</td><td>' + esc(r.target) + '</td>' +
+          '<td><span class="tag">' + esc(r.action) + '</span></td><td class="small muted">' + esc(r.detail) + '</td></tr>';
+      }).join('') + '</tbody></table></div>';
+  }
+
+  /* ---------------- 视图：工作台首页 ---------------- */
+  function viewDashboard() {
+    var openTasks = DATA.tasks.filter(function (t) { return t.status !== '已完成'; });
+    var overdue = openTasks.filter(function (t) { return t.overdue; }).length;
+    var stale = DATA.donors.filter(function (d) { return daysSince(d.lastContact) >= 90; }).length;
+    var pendingFeedback = DATA.donations.filter(function (n) { return n.feedback !== '已回馈'; }).length;
+
+    return '<section class="stats">' +
+      statCard('捐赠人档案', DATA.donors.length, '家 / 位 · 示例数据') +
+      statCard('90 天未联系', stale, '按暂定阈值自动标记', 'warn') +
+      statCard('逾期承诺', overdue, '承诺事项超期未完成', 'danger') +
+      statCard('待回馈捐赠', pendingFeedback, '物资 / 资金反馈未完成') +
+      '</section>' +
+      '<div class="cols">' +
+        '<section class="panel">' +
+          '<div class="panel__head"><h3>今日待办 <span class="muted small">· 自动规则与承诺事项生成</span></h3>' +
+          '<button class="link" data-act="view" data-view="tasks">全部待办 →</button></div>' +
+          (openTasks.length ? openTasks.map(taskRow).join('') : '<div class="empty">今天没有待办</div>') +
+        '</section>' +
+        '<section class="panel">' +
+          '<div class="panel__head"><h3>核心链路</h3><span class="muted small">导入 → 记录 → 时间线 → 待办</span></div>' +
+          '<ol class="flow">' +
+            '<li><span><b>导入</b> 现有 Excel，字段映射后入库</span><button class="link" data-act="view" data-view="import">去导入 →</button></li>' +
+            '<li><span><b>一句话记录</b> AI 结构化后人工确认</span><button class="link" data-act="ai-record" data-id="d2">试一下 →</button></li>' +
+            '<li><span><b>时间线</b> 接触与变更全部留痕</span><button class="link" data-act="open-donor" data-id="d1">看示例 →</button></li>' +
+            '<li><span><b>待办</b> 今天该联系谁，完成后回填</span><button class="link" data-act="view" data-view="tasks">去处理 →</button></li>' +
+          '</ol>' +
+          '<p class="hint" style="margin-top:10px">本期只做 P0 链路；分析与月捐为 P1 / P2，页面内已标注。</p>' +
+        '</section>' +
+      '</div>' +
+      '<section class="panel">' +
+        '<div class="panel__head"><h3>最近操作留痕</h3><button class="link" data-act="view" data-view="permissions">权限与账号 →</button></div>' +
+        auditTable(DATA.audit) +
+      '</section>';
+  }
+
+  /* ---------------- 视图：捐赠人档案 ---------------- */
+  function filteredDonors() {
+    var q = state.donorQuery.trim();
+    return DATA.donors.filter(function (d) {
+      var okType = state.donorType === 'all' || d.type === state.donorType;
+      var okText = !q || (d.name + d.contact + d.source + d.title).indexOf(q) >= 0;
+      return okType && okText;
+    });
+  }
+  function viewDonors() {
+    var rows = filteredDonors();
+    var types = ['all', '基金会', '爱心企业', '爱心个人', '学者'];
+    return '<section class="panel">' +
+      '<div class="toolbar" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px">' +
+        '<input class="input" id="donorSearch" style="max-width:280px" placeholder="搜索名称 / 联系人 / 来源介绍人" value="' + esc(state.donorQuery) + '">' +
+        '<div style="display:flex;gap:6px;flex-wrap:wrap">' +
+          types.map(function (t) {
+            return '<button class="chip-btn btn ' + (state.donorType === t ? 'btn--primary' : 'btn--ghost') + ' btn--sm" data-act="donor-type" data-type="' + t + '">' + (t === 'all' ? '全部' : t) + '</button>';
+          }).join('') +
+        '</div>' +
+        '<button class="btn btn--primary" style="margin-left:auto" data-act="open-new-donor">＋ 新建档案</button>' +
+      '</div>' +
+      '<p class="hint" style="margin-bottom:10px">共 ' + rows.length + ' 条 · 任何人可补充，但每笔修改都留痕（F-01 / F-05）。</p>' +
+      '<div class="table-scroll"><table class="table"><thead><tr>' +
+        '<th>名称 / 单位</th><th>资源类型</th><th>联系人 · 职务</th><th>来源介绍人</th><th>最近互动</th><th>负责人</th><th>状态</th><th></th>' +
+      '</tr></thead><tbody id="donorRows">' +
+        (rows.length ? rows.map(donorRow).join('') : '<tr><td colspan="8"><div class="empty">没有匹配的档案</div></td></tr>') +
+      '</tbody></table></div>' +
+      '</section>';
+  }
+
+  /* ---------------- 视图：捐赠人详情 ---------------- */
+  function viewDonorDetail() {
+    var d = donorById(state.donorId) || DATA.donors[0];
+    var tl = DATA.timeline[d.id] || [];
+    var dons = DATA.donations.filter(function (n) { return n.donorId === d.id; });
+    var myTasks = DATA.tasks.filter(function (t) { return t.donorId === d.id; });
+    var tab = state.detailTab;
+
+    var historyHtml = d.titleHistory.length
+      ? d.titleHistory.map(function (h) {
+          return '<span class="tag">' + esc(h.title) + ' · ' + h.from + ' 至 ' + h.to + '</span>';
+        }).join(' ')
+      : '<span class="hint">暂无历史职务</span>';
+
+    var tabsHtml = '<div class="tabs">' +
+      ['timeline|互动时间线', 'donations|捐赠与去向', 'tasks|待办'].map(function (pair) {
+        var parts = pair.split('|');
+        return '<button class="tab' + (tab === parts[0] ? ' is-active' : '') + '" data-act="detail-tab" data-tab="' + parts[0] + '">' + parts[1] + '</button>';
+      }).join('') + '</div>';
+
+    var body = '';
+    if (tab === 'timeline') {
+      body = tl.length ? '<ul class="tl">' + tl.map(function (it) {
+        return '<li class="tl__item' + (it.system ? ' is-system' : '') + (it.ai ? ' is-ai' : '') + '">' +
+          '<span class="tl__dot"></span>' +
+          '<div class="tl__meta"><span class="tag">' + esc(it.kind) + '</span><time>' + it.date + '</time>' +
+            '<span>· ' + esc(it.by) + '</span>' +
+            (it.ai ? '<span class="tag tag--ai">AI 草稿 · 人工确认</span>' : '') +
+            (it.system ? '<span class="tag">系统留痕</span>' : '') +
+          '</div>' +
+          '<p>' + esc(it.text) + '</p>' +
+          (it.promise ? '<div class="promise"><span>承诺：' + esc(it.promise) + '</span>' + (it.overdue ? '<span class="tag tag--danger">已逾期</span>' : '') + '</div>' : '') +
+          '</li>';
+      }).join('') + '</ul>' : '<div class="empty">还没有互动记录，点右上角「记一笔」开始</div>';
+    } else if (tab === 'donations') {
+      body = dons.length ? '<div class="table-scroll"><table class="table"><thead><tr>' +
+        '<th>日期</th><th>类型</th><th>内容</th><th>去向 / 用途</th><th>回馈状态</th><th></th>' +
+        '</tr></thead><tbody>' + dons.map(function (n) {
+          var chip = n.feedback === '已回馈' ? '<span class="tag tag--brand">已回馈</span>'
+            : n.feedback === '待回馈' ? '<span class="tag tag--warn">待回馈</span>'
+            : '<span class="tag tag--danger">未到账</span>';
+          var action = n.feedback === '已回馈'
+            ? '<span class="hint">' + esc(n.note) + '</span>'
+            : '<button class="btn btn--ghost btn--sm" data-act="mark-feedback" data-id="' + n.id + '">标记已回馈</button>';
+          return '<tr><td class="small">' + n.date + '</td><td><span class="tag">' + n.cat + '</span></td>' +
+            '<td>' + esc(n.item) + '</td><td class="small">' + esc(n.dest) + '</td><td>' + chip + '</td><td>' + action + '</td></tr>';
+        }).join('') + '</tbody></table></div>' +
+        '<p class="hint" style="margin-top:10px">规则：物资未到账不得标记「已回馈」；数量为 0 不允许提交（F-04）。</p>'
+        : '<div class="empty">还没有捐赠记录</div>';
+    } else {
+      body = myTasks.length ? myTasks.map(taskRow).join('') : '<div class="empty">该捐赠人暂无待办</div>';
+    }
+
+    return '<section class="panel">' +
+      '<div class="detail-hero">' +
+        '<div>' +
+          '<div class="detail-hero__meta"><span class="tag tag--brand">' + d.type + '</span><span>负责人 ' + esc(d.owner) + '</span><span>最近互动 ' + d.lastContact + '</span>' + statusChip(d) + '</div>' +
+          '<h2>' + esc(d.name) + '</h2>' +
+          '<div class="detail-hero__meta"><span>联系人 ' + esc(d.contact) + ' · ' + esc(d.title) + '</span></div>' +
+        '</div>' +
+        '<div class="detail-hero__ops">' +
+          '<button class="btn btn--primary" data-act="ai-record" data-id="' + d.id + '">记一笔（AI）</button>' +
+          '<button class="btn btn--ghost" data-act="edit-donor" data-id="' + d.id + '">编辑档案</button>' +
+          '<button class="btn btn--ghost" data-act="new-task" data-id="' + d.id + '">＋ 待办</button>' +
+        '</div>' +
+      '</div>' +
+      '<div class="info-grid">' +
+        '<div><div class="k">手机（脱敏）</div><div class="v">' + esc(d.phone) + '</div></div>' +
+        '<div><div class="k">来源介绍人</div><div class="v">' + esc(d.source) + '</div></div>' +
+        '<div><div class="k">行业</div><div class="v">' + esc(d.industry) + '</div></div>' +
+        '<div><div class="k">捐赠方式</div><div class="v">' + esc(d.method) + '</div></div>' +
+        '<div><div class="k">地区</div><div class="v">' + esc(d.region) + '</div></div>' +
+        '<div><div class="k">备注</div><div class="v small">' + esc(d.note) + '</div></div>' +
+      '</div>' +
+      '<div class="history-note"><b>历史职务（不覆盖）：</b> ' + historyHtml + '</div>' +
+    '</section>' +
+    '<section class="panel">' + tabsHtml + body + '</section>';
+  }
+
+  /* ---------------- 视图：数据导入 ---------------- */
+  function viewImport() {
+    var mapped = state.importMapped;
+    var selects = DATA.mapping.map(function (m) {
+      var val = mapped && !m.field ? '备注（沟通摘要）' : m.field;
+      return '<div class="map-row">' +
+        '<div class="small"><span class="tag">' + esc(m.excel) + '</span></div>' +
+        '<div class="arrow">→</div>' +
+        '<select class="input" ' + (mapped ? '' : (m.field ? '' : 'style="border-color:#e6c07a"')) + '>' +
+          options(FIELD_OPTIONS, val || '暂不导入') +
+        '</select>' +
+      '</div>';
+    }).join('');
+
+    return '<section class="panel">' +
+      '<div class="panel__head"><h3>上传脱敏 Excel</h3><span class="hint">单次上限 500 行 · 含政府类主体整行拒收（F-02 / F-12）</span></div>' +
+      '<div class="dropzone">' +
+        '<strong>把脱敏后的捐赠人表拖到这里，或点击选择文件</strong>' +
+        '<div class="hint">支持 .xlsx / .csv · 示例文件：捐赠人信息一览表（脱敏示意）.xlsx</div>' +
+        '<div class="file-chip">📄 捐赠人信息一览表（脱敏示意）.xlsx · 14 行 · 8 列</div>' +
+      '</div>' +
+    '</section>' +
+    '<section class="panel">' +
+      '<div class="panel__head"><h3>字段映射</h3>' +
+        '<button class="btn btn--ghost btn--sm" data-act="import-automap">' + (mapped ? '重新自动映射' : '自动映射') + '</button>' +
+      '</div>' +
+      selects +
+      '<p class="hint">表头不匹配时进入待映射清单，不允许直接导入；「沟通记录」这类自由文本列需人工指定目标字段。</p>' +
+    '</section>' +
+    '<section class="panel">' +
+      '<div class="panel__head"><h3>校验结果</h3><span class="hint">导入前校验，拒收行会生成拒收记录</span></div>' +
+      '<div class="ck">' +
+        '<div class="ck__box"><div class="ck__num">12</div><div class="ck__label">可导入</div></div>' +
+        '<div class="ck__box ck__box--warn"><div class="ck__num">' + (mapped ? '0' : '1') + '</div><div class="ck__label">待人工映射</div></div>' +
+        '<div class="ck__box ck__box--danger"><div class="ck__num">1</div><div class="ck__label">拒收（政府类）</div></div>' +
+      '</div>' +
+      '<div class="table-scroll"><table class="table"><thead><tr><th>行号</th><th>名称</th><th>结果</th><th>原因 / 处理</th></tr></thead><tbody>' +
+        '<tr><td class="small">第 11 行</td><td>河南省教育厅</td><td><span class="tag tag--danger">拒收</span></td><td class="small">政府类主体整条不入库、不进 AI（F-12，宁严不宽）</td></tr>' +
+        (mapped ? '' : '<tr><td class="small">第 7 行</td><td>郑州明远建设有限公司</td><td><span class="tag tag--warn">待确认</span></td><td class="small">列「沟通记录」未选择映射字段，需人工指定或选择「暂不导入」</td></tr>') +
+      '</tbody></table></div>' +
+      '<div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap">' +
+        '<button class="btn btn--primary" data-act="import-run">开始导入</button>' +
+        '<button class="btn btn--ghost" data-act="view" data-view="donors">查看已有档案</button>' +
+      '</div>' +
+    '</section>';
+  }
+
+  /* ---------------- 视图：待办与提醒 ---------------- */
+  function viewTasks() {
+    var list = DATA.tasks.slice().sort(function (a, b) { return (b.overdue ? 1 : 0) - (a.overdue ? 1 : 0); });
+    var open = list.filter(function (t) { return t.status !== '已完成'; });
+    var done = list.filter(function (t) { return t.status === '已完成'; });
+    return '<section class="panel">' +
+      '<div class="panel__head"><h3>待办与提醒</h3><button class="btn btn--primary btn--sm" data-act="new-task">＋ 新建待办</button></div>' +
+      '<p class="hint" style="margin-bottom:8px">自动规则：连续 90 天无互动 → 生成联系待办；承诺事项到期未完成 → 逾期提醒（F-06）。</p>' +
+      (open.length ? open.map(taskRow).join('') : '<div class="empty">没有进行中的待办</div>') +
+    '</section>' +
+    (done.length ? '<section class="panel"><div class="panel__head"><h3>已完成</h3><span class="hint">完成后回填结果会写入捐赠人时间线</span></div>' + done.map(taskRow).join('') + '</section>' : '');
+  }
+
+  /* ---------------- 视图：物资与心愿单 ---------------- */
+  function viewWishlist() {
+    var items = DATA.wishlist.map(function (w) {
+      var pct = Math.round((w.got / w.need) * 100);
+      return '<div class="wish">' +
+        '<div><div class="wish__name">' + esc(w.name) + '</div>' +
+        '<div class="wish__meta">已筹 ' + w.got + ' / ' + w.need + ' ' + w.unit + ' · ' + (w.status === '已完成' ? '已完成' : '进行中') + '</div></div>' +
+        '<div style="text-align:right">' +
+          (w.status === '已完成'
+            ? '<span class="tag tag--brand">已完成</span>'
+            : '<button class="btn btn--ghost btn--sm" data-act="wish-claim" data-id="' + w.id + '">登记认领</button>') +
+        '</div>' +
+        '<div class="wish__bar bar"><div class="bar__fill' + (w.status === '已完成' ? ' bar__fill--done' : '') + '" style="width:' + pct + '%"></div></div>' +
+        '</div>';
+    }).join('');
+
+    var pending = DATA.donations.filter(function (n) { return n.feedback === '未到账'; });
+    return '<section class="panel">' +
+      '<div class="panel__head"><h3>心愿单</h3><span class="hint">原为半年一次的手工梳理，现按条目持续更新（F-04）</span></div>' +
+      items +
+    '</section>' +
+    '<section class="panel">' +
+      '<div class="panel__head"><h3>未到账认领</h3><span class="hint">到账前不得标记已回馈</span></div>' +
+      (pending.length
+        ? '<div class="table-scroll"><table class="table"><thead><tr><th>登记日期</th><th>捐赠人</th><th>内容</th><th>计划去向</th><th>状态</th></tr></thead><tbody>' +
+          pending.map(function (n) {
+            var d = donorById(n.donorId);
+            return '<tr><td class="small">' + n.date + '</td><td>' + esc(d.name) + '</td><td>' + esc(n.item) + '</td><td class="small">' + esc(n.dest) + '</td><td><span class="tag tag--danger">未到账</span></td></tr>';
+          }).join('') + '</tbody></table></div>'
+        : '<div class="empty">暂无未到账认领</div>') +
+    '</section>';
+  }
+
+  /* ---------------- 视图：分析（P1 简化版） ---------------- */
+  function viewAnalysis() {
+    var counts = {};
+    DATA.donors.forEach(function (d) { counts[d.type] = (counts[d.type] || 0) + 1; });
+    var max = 0;
+    Object.keys(counts).forEach(function (k) { if (counts[k] > max) max = counts[k]; });
+    var bars = Object.keys(counts).map(function (k) {
+      return '<div class="bars__row"><span>' + k + '</span><div class="bars__track"><div class="bars__fill" style="width:' + Math.round(counts[k] / max * 100) + '%"></div></div><span class="bars__num">' + counts[k] + '</span></div>';
+    }).join('');
+
+    var gap30 = DATA.donors.filter(function (d) { return daysSince(d.lastContact) <= 30; }).length;
+    var gap90 = DATA.donors.filter(function (d) { var g = daysSince(d.lastContact); return g > 30 && g <= 90; }).length;
+    var gapMore = DATA.donors.length - gap30 - gap90;
+
+    return '<section class="panel">' +
+      '<div class="panel__head"><h3>资源类型分布</h3><span class="tag tag--warn">P1 · 仅聚合视图</span></div>' +
+      '<div class="bars">' + bars + '</div>' +
+      '<p class="hint" style="margin-top:12px">本期不启用 AI 结论：至少 3 个月真实记录后才有画像依据（F-08 / F-09）。</p>' +
+    '</section>' +
+    '<div class="cols">' +
+      '<section class="panel">' +
+        '<div class="panel__head"><h3>互动频次</h3></div>' +
+        '<div class="bars">' +
+          '<div class="bars__row"><span>30 天内</span><div class="bars__track"><div class="bars__fill" style="width:' + Math.round(gap30 / Math.max(1, DATA.donors.length) * 100) + '%"></div></div><span class="bars__num">' + gap30 + '</span></div>' +
+          '<div class="bars__row"><span>31–90 天</span><div class="bars__track"><div class="bars__fill" style="width:' + Math.round(gap90 / Math.max(1, DATA.donors.length) * 100) + '%"></div></div><span class="bars__num">' + gap90 + '</span></div>' +
+          '<div class="bars__row"><span>90 天以上</span><div class="bars__track"><div class="bars__fill" style="width:' + Math.round(gapMore / Math.max(1, DATA.donors.length) * 100) + '%"></div></div><span class="bars__num">' + gapMore + '</span></div>' +
+        '</div>' +
+      '</section>' +
+      '<section class="panel">' +
+        '<div class="panel__head"><h3>候选维护建议</h3><span class="hint">每条都带依据片段</span></div>' +
+        '<div class="task"><div class="task__main"><div class="task__title">郑州明远建设有限公司</div>' +
+          '<div class="task__meta"><span>依据：2026-08-15 捐赠玩具 50 套 · 100 天未联系</span></div>' +
+          '<p class="small" style="margin-top:4px">建议：电话问候 + 询问今年物资计划，顺势发送去年物资使用照片。</p></div></div>' +
+        '<div class="task"><div class="task__main"><div class="task__title">河南同心教育基金会</div>' +
+          '<div class="task__meta"><span>依据：2026-10-28 项目资助 5 万元 · 结项承诺已逾期</span></div>' +
+          '<p class="small" style="margin-top:4px">建议：先提交结项材料，再谈 2027 年培训项目续期。</p></div></div>' +
+        '<div class="task"><div class="task__main"><div class="task__title">星火社区服务中心</div>' +
+          '<div class="task__meta"><span class="tag tag--warn">依据不足</span></div>' +
+          '<p class="small" style="margin-top:4px">仅 1 条互动记录，暂不给出维护结论，先补充记录。</p></div></div>' +
+      '</section>' +
+    '</div>';
+  }
+
+  /* ---------------- 视图：权限与账号 ---------------- */
+  function viewPermissions() {
+    var matrix = [
+      ['查看档案', '✓', '✓', '✓'],
+      ['新建 / 编辑档案', '✓', '✓', '—'],
+      ['上传与导入数据', '✓', '✓', '—（须实名）'],
+      ['查看敏感字段（手机号）', '✓', '按授权', '—'],
+      ['账号与权限设置', '✓', '—', '—']
+    ];
+    return '<div class="cols">' +
+      '<section class="panel">' +
+        '<div class="panel__head"><h3>脱敏与合规边界</h3><span class="tag tag--danger">设计前提</span></div>' +
+        '<div class="table-scroll"><table class="table"><thead><tr><th>资源类型</th><th>能否入库</th><th>处理方式</th></tr></thead><tbody>' +
+          '<tr><td>政府（教育厅 / 教科文组织等）</td><td><span class="tag tag--danger">不能</span></td><td class="small">整条不入库、不进 AI，不做打码式脱敏</td></tr>' +
+          '<tr><td>基金会</td><td><span class="tag tag--brand">可以</span></td><td class="small">脱敏后录入；对外披露须人工核对</td></tr>' +
+          '<tr><td>学者 / 爱心企业 / 爱心个人</td><td><span class="tag tag--brand">可以</span></td><td class="small">最小必要留存，仅授权人可见</td></tr>' +
+          '<tr><td>儿童与家庭信息</td><td><span class="tag tag--warn">受限</span></td><td class="small">仅保留匿名化描述，影像需监护人授权</td></tr>' +
+        '</tbody></table></div>' +
+      '</section>' +
+      '<section class="panel">' +
+        '<div class="panel__head"><h3>角色权限</h3><span class="hint">简化版：3 类角色 + 全员实名（F-07）</span></div>' +
+        '<div class="table-scroll"><table class="table"><thead><tr><th>能力</th><th>管理员</th><th>编辑</th><th>查看</th></tr></thead><tbody>' +
+          matrix.map(function (r) {
+            return '<tr><td>' + r[0] + '</td><td class="small">' + r[1] + '</td><td class="small">' + r[2] + '</td><td class="small">' + r[3] + '</td></tr>';
+          }).join('') +
+        '</tbody></table></div>' +
+      '</section>' +
+    '</div>' +
+    '<section class="panel">' +
+      '<div class="panel__head"><h3>账号与实名状态</h3><span class="hint">未实名账号不得上传信息</span></div>' +
+      '<div class="table-scroll"><table class="table"><thead><tr><th>姓名</th><th>角色</th><th>实名</th><th>可见范围</th><th>状态</th></tr></thead><tbody>' +
+        DATA.accounts.map(function (a) {
+          var realChip = a.real === '已实名' ? '<span class="tag tag--brand">已实名</span>'
+            : a.real === '待实名' ? '<span class="tag tag--warn">待实名</span>'
+            : '<span class="tag tag--danger">未实名</span>';
+          var stChip = a.status === '启用' ? '<span class="tag">启用</span>'
+            : a.status === '限制中' ? '<span class="tag tag--warn">限制中</span>'
+            : '<span class="tag">待激活</span>';
+          return '<tr><td>' + esc(a.name) + '</td><td>' + esc(a.role) + '</td><td>' + realChip + '</td><td class="small">' + esc(a.scope) + '</td><td>' + stChip + '</td></tr>';
+        }).join('') +
+      '</tbody></table></div>' +
+    '</section>' +
+    '<section class="panel">' +
+      '<div class="panel__head"><h3>操作留痕</h3><span class="hint">谁在什么时候改了什么</span></div>' +
+      auditTable(DATA.audit) +
+    '</section>';
+  }
+
+  /* ---------------- 视图：捐赠人门户 ---------------- */
+  function viewPortal() {
+    var d = donorById('d1');
+    var dons = DATA.donations.filter(function (n) { return n.donorId === 'd1'; });
+    var cards = dons.map(function (n) {
+      return '<div class="donation-card">' +
+        '<div class="donation-card__head">' +
+          '<div><div class="donation-card__title">' + esc(n.item) + '</div>' +
+          '<div class="hint">' + n.date + ' · ' + n.cat + '</div></div>' +
+          (n.feedback === '已回馈' ? '<span class="tag tag--brand">已反馈</span>' : '<span class="tag tag--warn">待反馈</span>') +
+        '</div>' +
+        '<div class="steps">' +
+          '<div class="step step--done"><div class="step__label">已接收</div><div class="step__text">' + n.date + ' 入库登记</div></div>' +
+          '<div class="step step--done"><div class="step__label">已分配</div><div class="step__text">' + esc(n.dest) + '</div></div>' +
+          '<div class="step' + (n.feedback === '已回馈' ? ' step--done' : '') + '"><div class="step__label">已使用 / 反馈</div><div class="step__text">' + esc(n.note) + '</div></div>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+
+    var intentBlock = state.intentSent
+      ? '<div class="success-card"><h3>已收到你的支持意向</h3>' +
+        '<p class="small">吴冲（传播筹资负责人）会在 2 个工作日内与你联系。本次提交已记录，仅你与机构可见。</p>' +
+        '<button class="btn btn--ghost btn--sm" style="margin-top:10px" data-act="intent-again">再提交一条</button></div>'
+      : '<form id="intentForm">' +
+        '<label class="field"><span>支持意向类型 <span class="req">*</span></span>' +
+          '<select class="input" id="intentType">' + options(['物资捐赠', '资金资助', '志愿服务', '月捐意向'], '物资捐赠') + '</select></label>' +
+        '<label class="field"><span>意向内容 <span class="req">*</span></span>' +
+          '<input class="input" id="intentDetail" placeholder="例如：想捐 20 套绘本，11 月底前可以寄出"></label>' +
+        '<label class="field"><span>留言（选填）</span>' +
+          '<textarea class="input" id="intentMsg" placeholder="想了解的事项、方便联系的时间等"></textarea></label>' +
+        '<label class="field"><span>联系方式</span>' +
+          '<input class="input" id="intentPhone" value="138****6721"></label>' +
+        '<div class="form-err" id="portalErr"></div>' +
+        '<button type="button" class="btn btn--primary" data-act="intent-submit">提交支持意向</button>' +
+      '</form>';
+
+    return '<div class="portal-hero">' +
+      '<div><h2>你好，' + esc(d.contact) + '</h2>' +
+        '<p>这里是你的捐赠记录与物资去向；只展示与你本人相关的内容。</p></div>' +
+      '<div class="portal-hero__stats">' +
+        '<div><div class="portal-hero__num">2</div><div class="portal-hero__label">累计支持次数</div></div>' +
+        '<div><div class="portal-hero__num">20</div><div class="portal-hero__label">绘本（套）</div></div>' +
+        '<div><div class="portal-hero__num">2026-10</div><div class="portal-hero__label">最近一次</div></div>' +
+      '</div>' +
+    '</div>' +
+    '<div class="cols">' +
+      '<section class="panel">' +
+        '<div class="panel__head"><h3>我的捐赠与物资去向</h3><span class="hint">F-07 · P1 简化版</span></div>' +
+        cards +
+        '<p class="hint">只读展示；如需更正信息，请联系机构（F-07 异常：未匹配档案时转「申请绑定」）。</p>' +
+      '</section>' +
+      '<div>' +
+        '<section class="panel">' +
+          '<div class="panel__head"><h3>提交支持意向</h3><span class="hint">提交后由机构跟进</span></div>' +
+          intentBlock +
+        '</section>' +
+        '<section class="panel">' +
+          '<div class="panel__head"><h3>月度 / 年度报告</h3><span class="tag tag--warn">P2 · 规划中</span></div>' +
+          '<p class="small muted">上线后你将收到一页纸式的个性化汇总：本年捐赠、物资去向、参与的活动。</p>' +
+          '<button class="btn btn--ghost btn--sm" style="margin-top:10px" data-act="p2">了解规划</button>' +
+        '</section>' +
+        '<section class="panel">' +
+          '<p class="small muted">没看到自己的某笔捐赠？</p>' +
+          '<button class="link" data-act="bind-apply">申请绑定其他捐赠记录 →</button>' +
+        '</section>' +
+      '</div>' +
+    '</div>' +
+    '<p class="portal-foot">奇色花福利幼儿园 · 1991 年建园，1996 年起开展学前融合教育</p>';
+  }
+
+  var VIEWS = {
+    dashboard: viewDashboard,
+    donors: viewDonors,
+    donorDetail: viewDonorDetail,
+    import: viewImport,
+    tasks: viewTasks,
+    wishlist: viewWishlist,
+    analysis: viewAnalysis,
+    permissions: viewPermissions,
+    portal: viewPortal
+  };
+
+  /* ---------------- 弹窗内容 ---------------- */
+  function newDonorModal() {
+    openModal('新建捐赠人档案', 
+      '<p class="hint" style="margin-bottom:12px">必填项缺失不得保存；同名同单位会提示合并（F-01）。</p>' +
+      '<label class="field"><span>名称 / 单位 <span class="req">*</span></span><input class="input" id="f_name" placeholder="个人姓名或单位名称"></label>' +
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">' +
+        '<label class="field"><span>资源类型 <span class="req">*</span></span><select class="input" id="f_type">' + options(DONOR_TYPES, '爱心企业') + '</select></label>' +
+        '<label class="field"><span>联系人 <span class="req">*</span></span><input class="input" id="f_contact" placeholder="姓名"></label>' +
+      '</div>' +
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">' +
+        '<label class="field"><span>当前职务</span><input class="input" id="f_title" placeholder="如 行政总监"></label>' +
+        '<label class="field"><span>手机号</span><input class="input" id="f_phone" placeholder="录入后按最小必要展示"></label>' +
+      '</div>' +
+      '<label class="field"><span>来源介绍人</span><input class="input" id="f_source" placeholder="如 公众号读者 · 主动来访"></label>' +
+      '<label class="field"><span>备注</span><textarea class="input" id="f_note" placeholder="偏好、注意事项等"></textarea></label>' +
+      '<div class="form-err" id="formErr"></div>' +
+      '<p class="hint">提示：政府类主体（教育厅、教育局、教科文组织等）整条不入库，提交会被拦截。</p>',
+      '<button class="btn btn--ghost" data-act="close-modal">取消</button>' +
+      '<button class="btn btn--primary" data-act="create-donor">保存档案</button>');
+  }
+
+  function editDonorModal(id) {
+    var d = donorById(id);
+    openModal('编辑档案 · ' + d.name,
+      '<label class="field"><span>联系人</span><input class="input" id="e_contact" value="' + esc(d.contact) + '"></label>' +
+      '<label class="field"><span>当前职务</span><input class="input" id="e_title" value="' + esc(d.title) + '"></label>' +
+      '<label class="field"><span>手机号</span><input class="input" id="e_phone" value="' + esc(d.phone) + '"></label>' +
+      '<label class="field"><span>备注</span><textarea class="input" id="e_note">' + esc(d.note) + '</textarea></label>' +
+      '<p class="hint">修改职务不会覆盖旧职务：旧值会保留在历史职务中，并生成一条变更留痕（F-05）。</p>',
+      '<button class="btn btn--ghost" data-act="close-modal">取消</button>' +
+      '<button class="btn btn--primary" data-act="save-donor" data-id="' + d.id + '">保存修改</button>');
+  }
+
+  function aiRecordModal(id) {
+    var d = donorById(id);
+    openModal('记一笔 · ' + d.name + '（AI 辅助）',
+      '<p class="hint" style="margin-bottom:10px">说一句话即可，AI 提取字段生成待确认记录；<b>永不自动保存</b>，置信度低于 90% 的字段标黄需核对（F-03）。</p>' +
+      '<label class="field"><span>互动内容</span>' +
+        '<textarea class="input" id="aiText" style="min-height:96px">11月21日上午给' + esc(d.contact) + '打电话，对方说年底可以再捐一批户外玩具，大概12月中旬送到，希望我们拍点孩子玩的照片发给他。</textarea></label>' +
+      '<p class="hint">示例已预填一段电话记录，直接点「AI 解析」即可看到结构化结果。</p>',
+      '<button class="btn btn--ghost" data-act="close-modal">取消</button>' +
+      '<button class="btn btn--primary" data-act="ai-parse" data-id="' + d.id + '">AI 解析</button>');
+  }
+
+  function aiResultModal(id) {
+    var d = donorById(id);
+    openModal('AI 解析结果 · 待人工确认',
+      '<table class="table"><tbody>' +
+        '<tr><td style="width:96px" class="small muted">捐赠人</td><td>' + esc(d.name) + '</td></tr>' +
+        '<tr><td class="small muted">接触方式</td><td>电话 <span class="tag tag--brand">置信度 96%</span></td></tr>' +
+        '<tr><td class="small muted">发生日期</td><td>2026-11-21 <span class="tag tag--brand">98%</span></td></tr>' +
+        '<tr><td class="small muted">摘要</td><td class="small">对方表示年底可再捐一批户外玩具，约 12 月中旬送达；希望收到孩子使用的照片。</td></tr>' +
+        '<tr><td class="small muted">承诺事项</td><td>12 月中旬前捐赠户外玩具一批 <span class="tag tag--warn">82% · 请核对</span></td></tr>' +
+        '<tr><td class="small muted">回馈期望</td><td>拍摄使用照片并发送 <span class="tag tag--warn">75% · 请核对</span></td></tr>' +
+      '</tbody></table>' +
+      '<p class="hint" style="margin-top:10px">保存后写入时间线，并同步生成「12 月中旬跟进」提醒；可先修改再保存。</p>',
+      '<button class="btn btn--ghost" data-act="close-modal">放弃</button>' +
+      '<button class="btn btn--primary" data-act="ai-save" data-id="' + d.id + '">确认并保存</button>');
+  }
+
+  function taskFinishModal(id) {
+    var t = taskById(id);
+    if (!t) return;
+    var d = donorById(t.donorId);
+    openModal('完成待办 · ' + d.name,
+      '<p class="small" style="margin-bottom:12px">' + esc(t.title) + '</p>' +
+      '<label class="field"><span>回填结果（会写入时间线）</span>' +
+        '<textarea class="input" id="taskResult" placeholder="例如：已电话沟通，对方确认 12 月中旬捐赠户外玩具一批"></textarea></label>' +
+      '<label class="small" style="display:flex;gap:8px;align-items:center">' +
+        '<input type="checkbox" id="taskTimeline" checked> 同时生成一条互动记录（推荐）</label>',
+      '<button class="btn btn--ghost" data-act="close-modal">取消</button>' +
+      '<button class="btn btn--primary" data-act="task-submit" data-id="' + t.id + '">完成并回填</button>');
+  }
+
+  function newTaskModal(id) {
+    var preselected = id || 'd1';
+    openModal('新建待办',
+      '<label class="field"><span>关联捐赠人 <span class="req">*</span></span><select class="input" id="nt_donor">' +
+        DATA.donors.map(function (d) {
+          return '<option value="' + d.id + '"' + (d.id === preselected ? ' selected' : '') + '>' + esc(d.name) + '</option>';
+        }).join('') + '</select></label>' +
+      '<label class="field"><span>待办内容 <span class="req">*</span></span><input class="input" id="nt_title" placeholder="例如：发送物资使用照片"></label>' +
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">' +
+        '<label class="field"><span>截止日期</span><input class="input" id="nt_due" value="2026-11-27"></label>' +
+        '<label class="field"><span>执行人</span><select class="input" id="nt_owner">' + options(['吴冲', '顾佳怡'], '吴冲') + '</select></label>' +
+      '</div>' +
+      '<div class="form-err" id="formErr"></div>',
+      '<button class="btn btn--ghost" data-act="close-modal">取消</button>' +
+      '<button class="btn btn--primary" data-act="task-create">创建待办</button>');
+  }
+
+  function wishClaimModal(id) {
+    var w = DATA.wishlist.filter(function (x) { return x.id === id; })[0];
+    if (!w) return;
+    var left = w.need - w.got;
+    openModal('登记认领 · ' + w.name,
+      '<p class="hint" style="margin-bottom:12px">还缺 ' + left + ' ' + w.unit + '。登记后状态为「未到账」，到账前不得标记已回馈。</p>' +
+      '<label class="field"><span>认领捐赠人 <span class="req">*</span></span><select class="input" id="wc_donor">' +
+        DATA.donors.map(function (d) { return '<option value="' + d.id + '">' + esc(d.name) + '</option>'; }).join('') + '</select></label>' +
+      '<div style="display:grid;grid-template-columns:1fr 1.4fr;gap:12px">' +
+        '<label class="field"><span>数量（' + w.unit + '）</span><input class="input" id="wc_num" type="number" min="1" max="' + left + '" value="' + Math.min(10, left) + '"></label>' +
+        '<label class="field"><span>计划去向</span><input class="input" id="wc_dest" placeholder="如 大一班图书角" value="待分配"></label>' +
+      '</div>' +
+      '<div class="form-err" id="formErr"></div>',
+      '<button class="btn btn--ghost" data-act="close-modal">取消</button>' +
+      '<button class="btn btn--primary" data-act="wish-submit" data-id="' + w.id + '">登记认领</button>');
+  }
+
+  function guideModal() {
+    openModal('演示导览',
+      '<p class="small" style="margin-bottom:14px">这版原型用来讲清「记录 → 时间线 → 待办」这条主线，以及捐赠人端能看到什么。示例数据均为脱敏示意。</p>' +
+      '<ol class="flow">' +
+        '<li><span><b>数据导入</b>：Excel 字段映射 + 校验，政府类主体整行拒收</span><button class="link" data-act="view" data-view="import">去看 →</button></li>' +
+        '<li><span><b>一句话记录</b>：AI 解析后人工确认，永不自动保存</span><button class="link" data-act="ai-record" data-id="d2">试一下 →</button></li>' +
+        '<li><span><b>时间线</b>：接触、承诺、档案变更都留痕，交接不断档</span><button class="link" data-act="open-donor" data-id="d1">看详情 →</button></li>' +
+        '<li><span><b>待办回填</b>：完成后写回记录，进入下一轮维护</span><button class="link" data-act="view" data-view="tasks">去处理 →</button></li>' +
+      '</ol>' +
+      '<p class="hint" style="margin-top:12px">标注说明：P0 为本期已做；P1 仅保留聚合视图与简化门户；P2 仅预留入口。页面内不含真实 AI 调用与数据库。</p>',
+      '<button class="btn btn--primary" data-act="close-modal">知道了</button>');
+  }
+
+  /* ---------------- 事件 ---------------- */
+  document.addEventListener('click', function (e) {
+    var t = e.target.closest('[data-act]');
+    if (!t) return;
+    var act = t.getAttribute('data-act');
+
+    if (act === 'role') {
+      state.role = t.getAttribute('data-role');
+      state.view = state.role === 'admin' ? 'dashboard' : 'portal';
+      render();
+      return;
+    }
+    if (act === 'view') {
+      if ($('#modal').classList.contains('is-open')) closeModal();
+      state.view = t.getAttribute('data-view');
+      if (state.view === 'donors') { state.donorQuery = ''; state.donorType = 'all'; }
+      render();
+      return;
+    }
+    if (act === 'guide') { guideModal(); return; }
+    if (act === 'close-modal') { closeModal(); return; }
+
+    if (act === 'open-new-donor') { newDonorModal(); return; }
+    if (act === 'create-donor') {
+      var name = ($('#f_name') || {}).value || '';
+      var contact = ($('#f_contact') || {}).value || '';
+      var type = ($('#f_type') || {}).value || DONOR_TYPES[0];
+      name = name.trim(); contact = contact.trim();
+      var err = $('#formErr');
+      if (!name || !contact) {
+        if (err) err.textContent = '请填写名称 / 单位与联系人（必填）。';
+        return;
+      }
+      if (/教育厅|教育局|政府|教科文组织|民政|管委会/.test(name)) {
+        openModal('已拦截：政府类主体不入库',
+          '<p class="small">按脱敏边界，政府类主体整条不入库、不进 AI，不做打码式脱敏（F-12）。</p>' +
+          '<div class="promise" style="margin-top:12px"><span>已生成拒收记录：' + esc(name) + ' · 2026-11-23 · 操作人 吴冲</span></div>',
+          '<button class="btn btn--ghost" data-act="close-modal">返回</button>');
+        toast('已拦截并生成拒收记录（F-12）', 'danger');
+        return;
+      }
+      var dup = DATA.donors.some(function (d) { return d.name === name; });
+      var newId = 'd' + (Date.now() % 100000);
+      DATA.donors.unshift({
+        id: newId, name: name, type: type, contact: contact,
+        title: ($('#f_title') || {}).value || '待补充', titleHistory: [], phone: ($('#f_phone') || {}).value || '未填写',
+        source: ($('#f_source') || {}).value || '未填写', industry: '待补充', method: '待补充',
+        lastContact: TODAY, owner: '吴冲', region: '郑州', note: ($('#f_note') || {}).value || ''
+      });
+      DATA.timeline[newId] = [{ date: TODAY, kind: '建档', by: '吴冲', system: true, text: '新建档案（' + type + '），必填字段完整。' }];
+      DATA.audit.unshift({ time: '2026-11-23 13:20', user: '吴冲', target: name, action: '新建档案', detail: '资源类型：' + type });
+      closeModal();
+      state.view = 'donorDetail'; state.donorId = newId; state.detailTab = 'timeline';
+      render();
+      toast(dup ? '档案已创建；检测到同名档案，建议后续合并' : '档案已创建，已进入详情页', dup ? '' : 'ok');
+      return;
+    }
+
+    if (act === 'open-donor') {
+      state.donorId = t.getAttribute('data-id');
+      state.view = 'donorDetail';
+      state.detailTab = 'timeline';
+      render();
+      return;
+    }
+    if (act === 'detail-tab') { state.detailTab = t.getAttribute('data-tab'); render(); return; }
+
+    if (act === 'edit-donor') { editDonorModal(t.getAttribute('data-id')); return; }
+    if (act === 'save-donor') {
+      var id = t.getAttribute('data-id');
+      var dd = donorById(id);
+      if (!dd) return;
+      var newTitle = ($('#e_title') || {}).value || dd.title;
+      var changed = newTitle !== dd.title;
+      if (changed && dd.title) {
+        dd.titleHistory.push({ title: dd.title, from: '—', to: '2026-11' });
+        DATA.timeline[id] = DATA.timeline[id] || [];
+        DATA.timeline[id].unshift({ date: TODAY, kind: '档案变更', by: '吴冲', system: true, text: '当前职务由「' + dd.title + '」更新为「' + newTitle + '」；旧职务已保留。' });
+        DATA.audit.unshift({ time: '2026-11-23 13:26', user: '吴冲', target: dd.name, action: '档案变更', detail: '职务：' + dd.title + ' → ' + newTitle + '（旧职务保留）' });
+      }
+      dd.title = newTitle;
+      dd.contact = ($('#e_contact') || {}).value || dd.contact;
+      dd.phone = ($('#e_phone') || {}).value || dd.phone;
+      dd.note = ($('#e_note') || {}).value || dd.note;
+      closeModal(); render();
+      toast(changed ? '已保存，旧职务已保留（F-05）' : '已保存修改', 'ok');
+      return;
+    }
+
+    if (act === 'ai-record') { aiRecordModal(t.getAttribute('data-id')); return; }
+    if (act === 'ai-parse') {
+      var text = (($('#aiText') || {}).value || '').trim();
+      if (!text) { toast('请先输入一句互动内容', 'danger'); return; }
+      aiResultModal(t.getAttribute('data-id'));
+      return;
+    }
+    if (act === 'ai-save') {
+      var aid = t.getAttribute('data-id');
+      DATA.timeline[aid] = DATA.timeline[aid] || [];
+      DATA.timeline[aid].unshift({
+        date: '2026-11-21', kind: '电话沟通', by: '吴冲', ai: true,
+        text: 'AI 从一句话中提取并经人工确认：对方表示年底可再捐一批户外玩具，约 12 月中旬送达，希望收到孩子使用的照片。',
+        promise: '12 月中旬前捐赠户外玩具一批', overdue: false
+      });
+      DATA.tasks.unshift({ id: 't' + (Date.now() % 100000), donorId: aid, title: '跟进：12 月中旬户外玩具捐赠', due: '2026-12-15', owner: '吴冲', source: 'AI 记录生成', status: '待处理', overdue: false });
+      DATA.audit.unshift({ time: '2026-11-23 13:31', user: '吴冲', target: donorById(aid).name, action: '新增互动记录', detail: 'AI 草稿 · 人工确认后保存' });
+      closeModal();
+      state.view = 'donorDetail'; state.donorId = aid; state.detailTab = 'timeline';
+      render();
+      toast('已保存到时间线（人工确认后）', 'ok');
+      return;
+    }
+    if (act === 'mark-feedback') {
+      var nid = t.getAttribute('data-id');
+      var rec = DATA.donations.filter(function (n) { return n.id === nid; })[0];
+      if (!rec) return;
+      if (rec.feedback === '未到账') {
+        toast('物资未到账，不能标记为已回馈（F-04）', 'danger');
+        return;
+      }
+      rec.feedback = '已回馈';
+      rec.note = '已于 ' + TODAY + ' 发送反馈';
+      DATA.audit.unshift({ time: '2026-11-23 13:33', user: '吴冲', target: donorById(rec.donorId).name, action: '更新回馈状态', detail: rec.item + ' 标记为已回馈' });
+      render();
+      toast('已标记为已回馈', 'ok');
+      return;
+    }
+
+    if (act === 'task-finish') { taskFinishModal(t.getAttribute('data-id')); return; }
+    if (act === 'task-submit') {
+      var tid = t.getAttribute('data-id');
+      var task = taskById(tid);
+      if (!task) return;
+      var result = (($('#taskResult') || {}).value || '').trim();
+      task.status = '已完成';
+      task.overdue = false;
+      if (($('#taskTimeline') || {}).checked && result) {
+        DATA.timeline[task.donorId] = DATA.timeline[task.donorId] || [];
+        DATA.timeline[task.donorId].unshift({ date: TODAY, kind: '任务回填', by: task.owner, text: '完成待办：' + task.title + '；结果：' + result });
+      }
+      DATA.audit.unshift({ time: '2026-11-23 13:36', user: task.owner, target: donorById(task.donorId).name, action: '完成待办', detail: task.title });
+      closeModal(); render();
+      toast('已完成，结果已回填到时间线', 'ok');
+      return;
+    }
+    if (act === 'new-task') { newTaskModal(t.getAttribute('data-id')); return; }
+    if (act === 'task-create') {
+      var nd = ($('#nt_donor') || {}).value;
+      var ntitle = (($('#nt_title') || {}).value || '').trim();
+      if (!ntitle) { var te = $('#formErr'); if (te) te.textContent = '请填写待办内容。'; return; }
+      DATA.tasks.unshift({
+        id: 't' + (Date.now() % 100000), donorId: nd, title: ntitle,
+        due: ($('#nt_due') || {}).value || TODAY, owner: ($('#nt_owner') || {}).value || '吴冲',
+        source: '手动创建', status: '待处理', overdue: false
+      });
+      DATA.audit.unshift({ time: '2026-11-23 13:38', user: '吴冲', target: donorById(nd).name, action: '新建待办', detail: ntitle });
+      closeModal(); render();
+      toast('待办已创建', 'ok');
+      return;
+    }
+
+    if (act === 'import-automap') {
+      state.importMapped = true;
+      render();
+      toast('已完成自动映射：「沟通记录」→ 备注（沟通摘要）', 'ok');
+      return;
+    }
+    if (act === 'import-run') {
+      if (!state.importMapped) {
+        toast('还有 1 列未映射，请先完成映射或点「自动映射」', 'danger');
+        return;
+      }
+      openModal('导入结果',
+        '<div class="ck" style="margin-top:0">' +
+          '<div class="ck__box"><div class="ck__num">12</div><div class="ck__label">导入成功</div></div>' +
+          '<div class="ck__box ck__box--danger"><div class="ck__num">1</div><div class="ck__label">拒收（政府类）</div></div>' +
+          '<div class="ck__box"><div class="ck__num">1</div><div class="ck__label">待人工处理</div></div>' +
+        '</div>' +
+        '<p class="small">- 河南省教育厅：整条未入库，已生成拒收记录。</p>' +
+        '<p class="small">- 第 7 行「沟通记录」内容已写入备注字段。</p>' +
+        '<p class="hint" style="margin-top:10px">导入后可按来源与资源类型筛选；判重规则在拿到真实表头后定稿。</p>',
+        '<button class="btn btn--ghost" data-act="close-modal">关闭</button>' +
+        '<button class="btn btn--primary" data-act="view" data-view="donors">查看档案</button>');
+      toast('导入完成：12 行入库，1 行拒收', 'ok');
+      return;
+    }
+
+    if (act === 'wish-claim') { wishClaimModal(t.getAttribute('data-id')); return; }
+    if (act === 'wish-submit') {
+      var wid = t.getAttribute('data-id');
+      var w = DATA.wishlist.filter(function (x) { return x.id === wid; })[0];
+      var num = parseInt((($('#wc_num') || {}).value || '0'), 10);
+      var left = w.need - w.got;
+      if (!num || num < 1) { var we = $('#formErr'); if (we) we.textContent = '数量需大于 0（F-04 规则）。'; return; }
+      if (num > left) { var we2 = $('#formErr'); if (we2) we2.textContent = '数量超过缺口（还缺 ' + left + ' ' + w.unit + '）。'; return; }
+      var wd = ($('#wc_donor') || {}).value;
+      w.got += num;
+      if (w.got >= w.need) w.status = '已完成';
+      DATA.donations.unshift({
+        id: 'n' + (Date.now() % 100000), donorId: wd, date: TODAY, cat: '物资',
+        item: w.name + ' ×' + num + ' ' + w.unit, wishId: w.id,
+        dest: ($('#wc_dest') || {}).value || '待分配', feedback: '未到账', note: '已登记认领，等待物资到账'
+      });
+      DATA.audit.unshift({ time: '2026-11-23 13:41', user: '吴冲', target: donorById(wd).name, action: '登记认领', detail: w.name + ' ×' + num });
+      closeModal(); render();
+      toast('已登记认领（未到账），到账后可更新去向', 'ok');
+      return;
+    }
+
+    if (act === 'donor-type') { state.donorType = t.getAttribute('data-type'); render(); return; }
+
+    if (act === 'intent-submit') {
+      var detail = (($('#intentDetail') || {}).value || '').trim();
+      if (!detail) {
+        var pe = $('#portalErr'); if (pe) pe.textContent = '请填写意向内容。';
+        return;
+      }
+      state.intentSent = true;
+      render();
+      toast('支持意向已提交，我们会尽快联系你', 'ok');
+      return;
+    }
+    if (act === 'intent-again') { state.intentSent = false; render(); return; }
+    if (act === 'bind-apply') {
+      openModal('申请绑定捐赠记录',
+        '<p class="small">如果你的捐赠没有显示在这里，可以提交姓名与捐赠时间，由机构核对后绑定，不会展示他人数据（F-07）。</p>' +
+        '<label class="field" style="margin-top:12px"><span>姓名 / 单位</span><input class="input" value="李静"></label>' +
+        '<label class="field"><span>捐赠时间或内容</span><input class="input" placeholder="例如：2026-06 现金 500 元"></label>',
+        '<button class="btn btn--ghost" data-act="close-modal">取消</button>' +
+        '<button class="btn btn--primary" data-act="bind-submit">提交申请</button>');
+      return;
+    }
+    if (act === 'bind-submit') { closeModal(); toast('申请已提交，机构核对后为你绑定', 'ok'); return; }
+    if (act === 'p2') {
+      openModal('月度 / 年度报告（P2 规划中）',
+        '<p class="small">规划形态：一页纸汇总你的本年捐赠、物资去向与参与活动；数据不足时降级为简短致谢，不编造叙事。</p>' +
+        '<p class="hint" style="margin-top:10px">本期仅预留入口，月捐时间表与目标人数待机构确认。</p>',
+        '<button class="btn btn--primary" data-act="close-modal">知道了</button>');
+      return;
+    }
+  });
+
+  document.addEventListener('input', function (e) {
+    if (e.target && e.target.id === 'donorSearch') {
+      state.donorQuery = e.target.value;
+      var tbody = $('#donorRows');
+      if (tbody) {
+        var rows = filteredDonors();
+        tbody.innerHTML = rows.length ? rows.map(donorRow).join('') : '<tr><td colspan="8"><div class="empty">没有匹配的档案</div></td></tr>';
+      }
+    }
+  });
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && $('#modal').classList.contains('is-open')) closeModal();
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>
