@@ -45,12 +45,6 @@
   }
   .brand__name{font-weight:700;font-size:15px;line-height:1.2}
   .brand__sub{font-size:11.5px;color:var(--muted);line-height:1.3}
-  .role-switch{display:flex;background:#f1f3ef;border-radius:9px;padding:3px;gap:2px}
-  .role-switch__btn{
-    flex:1;border:0;background:none;border-radius:7px;padding:6px 4px;font-size:12.5px;
-    color:var(--muted);cursor:pointer;transition:all .18s ease;
-  }
-  .role-switch__btn.is-active{background:#fff;color:var(--brand);font-weight:600;box-shadow:0 1px 2px rgba(0,0,0,.06)}
   .nav{display:flex;flex-direction:column;gap:2px}
   .nav__item{
     display:flex;align-items:center;gap:9px;border:0;background:none;text-align:left;
@@ -247,7 +241,7 @@
   .ck__box--warn .ck__num{color:#a8691a}
   .ck__box--danger .ck__num{color:var(--danger)}
 
-  /* ============ 捐赠人端 ============ */
+  /* ============ 门户通用组件（外部人员门户使用） ============ */
   .portal-hero{
     background:linear-gradient(135deg,#1b6b57,#2a8a70);color:#fff;border-radius:14px;padding:22px 24px;margin-bottom:18px;
     display:flex;justify-content:space-between;gap:18px;flex-wrap:wrap;align-items:flex-end;box-shadow:var(--shadow);
@@ -326,6 +320,19 @@
   }
   .side-logout:hover{background:#f2f4f0;color:var(--text)}
 
+  /* ============ 外部人员 · 捐赠人门户 ============ */
+  .ext-shell{min-height:100vh;background:var(--bg)}
+  .ext-top{
+    position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:14px;
+    padding:12px 24px;background:rgba(255,255,255,.94);border-bottom:1px solid var(--line);
+    backdrop-filter:blur(6px);
+  }
+  .ext-top .brand{padding:0;margin:0}
+  .ext-top__right{margin-left:auto;display:flex;align-items:center;gap:10px;font-size:12.5px;flex-wrap:wrap;justify-content:flex-end}
+  .ext-user{color:var(--muted)}
+  .ext-main{max-width:1060px;margin:0 auto;padding:24px 24px 44px}
+  .ext-main .portal-hero{margin:0 0 18px}
+
   /* ============ 权限模块 ============ */
   .perm-legend{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-bottom:14px}
   .perm-legend > span{display:inline-flex;align-items:center;gap:6px}
@@ -352,7 +359,6 @@
     .layout{flex-direction:column}
     .sidebar{width:auto;flex:none;height:auto;position:static;flex-direction:row;align-items:center;gap:10px;overflow-x:auto;padding:10px 14px;border-right:0;border-bottom:1px solid var(--line)}
     .brand__sub{display:none}
-    .role-switch{flex:0 0 auto;margin-left:auto}
     .nav{flex-direction:row;gap:2px;overflow-x:auto}
     .nav__item{white-space:nowrap;padding:6px 9px}
     .sidebar__foot{display:none}
@@ -361,6 +367,9 @@
     #app{padding:18px 16px 40px}
   }
   @media (max-width:600px){
+    .ext-top{padding:10px 14px}
+    .ext-top .brand__sub{display:none}
+    .ext-main{padding:16px 14px 32px}
     .donut-wrap{grid-template-columns:1fr;justify-items:center}
     .stats{grid-template-columns:1fr 1fr}
     .ck{grid-template-columns:1fr}
@@ -381,10 +390,6 @@
         <div class="brand__name">奇色花</div>
         <div class="brand__sub">捐赠人关系维护工作台</div>
       </div>
-    </div>
-    <div class="role-switch">
-      <button class="role-switch__btn is-active" data-act="role" data-role="admin" id="roleAdmin">管理端</button>
-      <button class="role-switch__btn" data-act="role" data-role="portal" id="rolePortal">捐赠人端</button>
     </div>
     <nav class="nav" id="nav"></nav>
     <div class="sidebar__foot">
@@ -427,7 +432,7 @@
 /* =========================================================
    奇色花 AI 捐赠人关系维护工作台 · 单文件原型
    管理端：档案 / 导入 / AI 记录 / 时间线 / 待办 / 物资 / 分析 / 权限
-   捐赠人端：我的捐赠与物资去向 / 支持意向
+   捐赠人门户（外部人员登录）：我的捐赠与去向 / 支持意向 / 回馈与报告
    ========================================================= */
 (function () {
   'use strict';
@@ -574,22 +579,26 @@
     { id: 'analysis', label: '分析视图', icon: '▤', badge: 'P1' },
     { id: 'permissions', label: '权限与账号', icon: '⚿' }
   ];
-  var NAV_PORTAL = [{ id: 'portal', label: '我的捐赠', icon: '♥' }];
 
   var TITLES = {
     dashboard: '工作台首页', donors: '捐赠人档案', donorDetail: '捐赠人详情', import: '数据导入',
-    tasks: '待办与提醒', wishlist: '物资与心愿单', wishDetail: '心愿单详情', analysis: '分析视图', permissions: '权限与账号', portal: '捐赠人门户'
+    tasks: '待办与提醒', wishlist: '物资与心愿单', wishDetail: '心愿单详情', analysis: '分析视图', permissions: '权限与账号'
   };
 
   var state = {
-    role: 'admin', view: 'dashboard', donorId: 'd1', detailTab: 'timeline', wishId: 'w1',
+    view: 'dashboard', donorId: 'd1', detailTab: 'timeline', wishId: 'w1',
     donorQuery: '', donorType: 'all', importMapped: false, intentSent: false,
     auth: { loggedIn: false, pick: 'staff', identity: 'staff', draft: '', account: null }
   };
 
   var BOUND_ACCOUNTS = {
-    staff: { '13800001234': '吴冲', '410105199001011234': '吴冲' },
-    external: { '13900005678': '王海涛' }
+    staff: {
+      '13800001234': { name: '吴冲' },
+      '410105199001011234': { name: '吴冲' }
+    },
+    external: {
+      '13900005678': { name: '王海涛', donorId: 'd2' }
+    }
   };
 
   function maskLogin(raw) {
@@ -649,31 +658,23 @@
     }
     if (state.auth.identity === 'external') {
       layout.classList.add('is-login');
-      $('#app').innerHTML = viewExternalHome();
+      $('#app').innerHTML = viewExternalPortal();
       window.scrollTo({ top: 0 });
       return;
     }
     layout.classList.remove('is-login');
-    var navs = state.role === 'admin' ? NAV_ADMIN : NAV_PORTAL;
+    var navs = NAV_ADMIN;
     var activeView = state.view === 'donorDetail' ? 'donors' : (state.view === 'wishDetail' ? 'wishlist' : state.view);
     $('#nav').innerHTML = navs.map(function (n) {
       return '<button class="nav__item' + (activeView === n.id ? ' is-active' : '') + '" data-act="view" data-view="' + n.id + '">' +
         '<span class="nav__icon">' + n.icon + '</span>' + n.label +
         (n.badge ? '<span class="nav__badge">' + n.badge + '</span>' : '') + '</button>';
     }).join('');
-    $('#roleAdmin').classList.toggle('is-active', state.role === 'admin');
-    $('#rolePortal').classList.toggle('is-active', state.role === 'portal');
     $('#crumbTitle').textContent = TITLES[state.view] || '工作台首页';
-    if (state.role === 'portal') {
-      $('#sideAvatar').textContent = '李';
-      $('#sideUser').textContent = '李静';
-      $('#sideRole').textContent = '爱心个人 · 捐赠人端';
-    } else {
-      var acc = state.auth.account || { name: '吴冲' };
-      $('#sideAvatar').textContent = acc.name.charAt(0);
-      $('#sideUser').textContent = acc.name;
-      $('#sideRole').textContent = '机构工作人员 · 实名';
-    }
+    var acc = state.auth.account || { name: '吴冲' };
+    $('#sideAvatar').textContent = acc.name.charAt(0);
+    $('#sideUser').textContent = acc.name;
+    $('#sideRole').textContent = '机构工作人员 · 实名';
     var fn = VIEWS[state.view] || VIEWS.dashboard;
     $('#app').innerHTML = fn();
     window.scrollTo({ top: 0 });
@@ -1140,28 +1141,136 @@
       '<button class="btn btn--primary" style="width:100%;justify-content:center" data-act="login-submit">登录</button>' +
       '<div class="login__demo"><b>演示账号</b><br>机构工作人员：13800001234 或 410105199001011234<br>外部人员：13900005678<br>' +
         '<button class="link" style="padding:0;margin-top:4px" data-act="login-fill">一键填充当前身份的演示账号</button></div>' +
-      '<p class="hint" style="margin-top:12px">本轮仅做界面与校验演示，不接入真实账号系统；外部人员权限待机构确认。</p>' +
+      '<p class="hint" style="margin-top:12px">本轮仅做界面与校验演示，不接入真实账号系统；外部人员登录后进入捐赠人门户，只展示与本人相关的内容。</p>' +
       '</div></div>';
   }
 
-  function viewExternalHome() {
-    var acc = state.auth.account || { name: '外部人员', masked: '—', method: '手机号' };
-    return '<div class="login"><div class="login__card login__card--wide">' +
-      '<div style="display:flex;justify-content:space-between;align-items:center;gap:12px">' +
+  /* ---------------- 视图：外部人员 · 捐赠人门户（F-07） ---------------- */
+  function viewExternalPortal() {
+    var acc = state.auth.account || { name: '捐赠人', masked: '—', method: '手机号', donorId: null };
+    var donor = acc.donorId ? donorById(acc.donorId) : null;
+
+    var rows = [];
+    if (donor) {
+      DATA.donations.filter(function (n) { return n.donorId === donor.id; }).forEach(function (n) {
+        rows.push({
+          date: n.date, title: n.item, cat: n.cat, dest: n.dest,
+          feedback: n.feedback, arrived: n.feedback !== '未到账', wish: false
+        });
+      });
+      DATA.wishlist.forEach(function (w) {
+        (w.contribs || []).forEach(function (c) {
+          if (c.donorId !== donor.id) return;
+          var dup = DATA.donations.some(function (n) {
+            return n.donorId === donor.id && n.wishId === w.id && n.date === c.date;
+          });
+          if (dup) return;
+          rows.push({
+            date: c.date, title: c.item + ' ×' + c.qty + ' ' + c.unit, cat: '物资', dest: c.note,
+            feedback: c.status === '未到账' ? '未到账' : '待回馈', arrived: c.status !== '未到账', wish: true
+          });
+        });
+      });
+    }
+    rows.sort(function (a, b) { return a.date < b.date ? 1 : -1; });
+
+    var cards = rows.map(function (n) {
+      var chip = n.feedback === '已回馈' ? '<span class="tag tag--brand">已反馈</span>'
+        : n.feedback === '未到账' ? '<span class="tag tag--danger">未到账</span>'
+          : '<span class="tag tag--warn">待反馈</span>';
+      var usedText = n.feedback === '已回馈'
+        ? (n.wish ? '已发送去向说明' : '已发送到位照片与说明')
+        : (n.arrived ? '使用进展由机构反馈' : '等待物资到账');
+      return '<div class="donation-card">' +
+        '<div class="donation-card__head">' +
+          '<div><div class="donation-card__title">' + esc(n.title) + '</div>' +
+          '<div class="hint">' + n.date + ' · ' + esc(n.cat) + (n.wish ? ' · 心愿单认领' : '') + '</div></div>' +
+          chip +
+        '</div>' +
+        '<div class="steps">' +
+          '<div class="step' + (n.arrived ? ' step--done' : '') + '"><div class="step__label">已接收</div>' +
+            '<div class="step__text">' + (n.arrived ? n.date + ' 入库登记' : '等待物资到账') + '</div></div>' +
+          '<div class="step' + (n.arrived ? ' step--done' : '') + '"><div class="step__label">已分配</div>' +
+            '<div class="step__text">' + (n.arrived ? esc(n.dest) : '到账后更新去向') + '</div></div>' +
+          '<div class="step' + (n.feedback === '已回馈' ? ' step--done' : '') + '"><div class="step__label">已使用 / 反馈</div>' +
+            '<div class="step__text">' + esc(usedText) + '</div></div>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+
+    var feedbackRows = rows.filter(function (n) { return n.feedback === '已回馈'; });
+    var waitFeedback = rows.filter(function (n) { return n.feedback === '待回馈'; }).length;
+    var latest = rows.length ? rows[0].date.slice(0, 7) : '—';
+
+    var intentBlock = state.intentSent
+      ? '<div class="success-card"><h3>已收到你的支持意向</h3>' +
+        '<p class="small">机构工作人员会在 2 个工作日内与你联系。本次提交仅你与机构可见。</p>' +
+        '<button class="btn btn--ghost btn--sm" style="margin-top:10px" data-act="intent-again">再提交一条</button></div>'
+      : '<form id="intentForm">' +
+        '<label class="field"><span>支持意向类型 <span class="req">*</span></span>' +
+          '<select class="input" id="intentType">' + options(['物资捐赠', '资金资助', '志愿服务', '月捐意向'], '物资捐赠') + '</select></label>' +
+        '<label class="field"><span>意向内容 <span class="req">*</span></span>' +
+          '<input class="input" id="intentDetail" placeholder="例如：想捐 20 套绘本，11 月底前可以寄出"></label>' +
+        '<label class="field"><span>留言（选填）</span>' +
+          '<textarea class="input" id="intentMsg" placeholder="想了解的事项、方便联系的时间等"></textarea></label>' +
+        '<label class="field"><span>联系方式</span>' +
+          '<input class="input" id="intentPhone" value="' + esc(acc.masked) + '"></label>' +
+        '<div class="form-err" id="portalErr"></div>' +
+        '<button type="button" class="btn btn--primary" data-act="intent-submit">提交支持意向</button>' +
+      '</form>';
+
+    return '<div class="ext-shell">' +
+      '<header class="ext-top">' +
         '<div class="brand" style="padding:0">' +
           '<div class="brand__logo">七</div>' +
-          '<div><div class="brand__name">奇色花</div><div class="brand__sub">捐赠人关系维护工作台</div></div>' +
+          '<div><div class="brand__name">奇色花</div><div class="brand__sub">捐赠人门户</div></div>' +
         '</div>' +
-        '<span class="tag tag--warn">权限待定</span>' +
-      '</div>' +
-      '<h1>你好，' + esc(acc.name) + '</h1>' +
-      '<p class="sub">已通过' + esc(acc.method) + ' ' + esc(acc.masked) + ' 登录。外部人员的可见范围与操作权限尚未确定，本轮仅展示占位页。</p>' +
-      '<div class="login__demo"><b>占位说明</b><br>· 不展示任何捐赠人档案、捐赠与物资数据<br>· 权限范围确认后在此接入对应入口<br>· 需要继续演示管理端，请退出后用机构账号登录</div>' +
-      '<div style="display:flex;gap:8px;margin-top:16px;flex-wrap:wrap">' +
-        '<button class="btn btn--ghost" data-act="logout">退出登录</button>' +
-        '<button class="btn btn--primary" data-act="external-scope">查看待定范围说明</button>' +
-      '</div>' +
-      '</div></div>';
+        '<div class="ext-top__right">' +
+          '<span class="tag tag--brand">捐赠人端</span>' +
+          '<span class="ext-user">' + esc(acc.name) + (donor ? ' · ' + esc(donor.name) : '') + '</span>' +
+          '<button class="btn btn--ghost btn--sm" data-act="logout">退出登录</button>' +
+        '</div>' +
+      '</header>' +
+      '<main class="ext-main">' +
+        '<div class="portal-hero">' +
+          '<div><h2>你好，' + esc(acc.name) + '</h2>' +
+            '<p>这里只展示与' + (donor ? '你（' + esc(donor.name) + '）' : '你本人') + '相关的捐赠记录与物资去向。</p></div>' +
+          '<div class="portal-hero__stats">' +
+            '<div><div class="portal-hero__num">' + rows.length + '</div><div class="portal-hero__label">累计支持次数</div></div>' +
+            '<div><div class="portal-hero__num">' + waitFeedback + '</div><div class="portal-hero__label">待反馈</div></div>' +
+            '<div><div class="portal-hero__num">' + latest + '</div><div class="portal-hero__label">最近一次</div></div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="cols">' +
+          '<section class="panel">' +
+            '<div class="panel__head"><h3>我的捐赠与物资去向</h3><span class="hint">F-07 · P1 简化版（只读）</span></div>' +
+            (rows.length ? cards : '<div class="empty">暂未查到与你账号绑定的捐赠记录，可在右侧提交「申请绑定」。</div>') +
+            '<p class="hint">只读展示，仅包含你本人的记录；如需更正信息，请联系机构。</p>' +
+          '</section>' +
+          '<div>' +
+            '<section class="panel">' +
+              '<div class="panel__head"><h3>提交支持意向</h3><span class="hint">提交后由机构跟进</span></div>' +
+              intentBlock +
+            '</section>' +
+            '<section class="panel">' +
+              '<div class="panel__head"><h3>回馈与报告</h3><span class="tag tag--warn">P2 · 规划中</span></div>' +
+              (feedbackRows.length
+                ? feedbackRows.map(function (n) {
+                    return '<div class="donation-card" style="margin-bottom:8px"><div class="donation-card__title">' + esc(n.title) + '</div>' +
+                      '<div class="hint">' + n.date + ' · 机构已发送回馈说明</div></div>';
+                  }).join('')
+                : '<p class="small muted">物资使用后，机构会在这里发送照片与去向说明；目前还没有已发送的回馈。</p>') +
+              '<button class="btn btn--ghost btn--sm" style="margin-top:10px" data-act="p2">月度 / 年度报告（规划中）</button>' +
+            '</section>' +
+            '<section class="panel">' +
+              '<p class="small muted">没看到自己的某笔捐赠？</p>' +
+              '<button class="link" data-act="bind-apply">申请绑定捐赠记录 →</button>' +
+            '</section>' +
+          '</div>' +
+        '</div>' +
+        '<p class="portal-foot">奇色花福利幼儿园 · 1991 年建园，1996 年起开展学前融合教育</p>' +
+      '</main>' +
+    '</div>';
   }
 
   /* ---------------- 视图：权限与账号 ---------------- */
@@ -1226,76 +1335,6 @@
       '</section>';
   }
 
-  /* ---------------- 视图：捐赠人门户 ---------------- */
-  function viewPortal() {
-    var d = donorById('d1');
-    var dons = DATA.donations.filter(function (n) { return n.donorId === 'd1'; });
-    var cards = dons.map(function (n) {
-      return '<div class="donation-card">' +
-        '<div class="donation-card__head">' +
-          '<div><div class="donation-card__title">' + esc(n.item) + '</div>' +
-          '<div class="hint">' + n.date + ' · ' + n.cat + '</div></div>' +
-          (n.feedback === '已回馈' ? '<span class="tag tag--brand">已反馈</span>' : '<span class="tag tag--warn">待反馈</span>') +
-        '</div>' +
-        '<div class="steps">' +
-          '<div class="step step--done"><div class="step__label">已接收</div><div class="step__text">' + n.date + ' 入库登记</div></div>' +
-          '<div class="step step--done"><div class="step__label">已分配</div><div class="step__text">' + esc(n.dest) + '</div></div>' +
-          '<div class="step' + (n.feedback === '已回馈' ? ' step--done' : '') + '"><div class="step__label">已使用 / 反馈</div><div class="step__text">' + esc(n.note) + '</div></div>' +
-        '</div>' +
-      '</div>';
-    }).join('');
-
-    var intentBlock = state.intentSent
-      ? '<div class="success-card"><h3>已收到你的支持意向</h3>' +
-        '<p class="small">吴冲（传播筹资负责人）会在 2 个工作日内与你联系。本次提交已记录，仅你与机构可见。</p>' +
-        '<button class="btn btn--ghost btn--sm" style="margin-top:10px" data-act="intent-again">再提交一条</button></div>'
-      : '<form id="intentForm">' +
-        '<label class="field"><span>支持意向类型 <span class="req">*</span></span>' +
-          '<select class="input" id="intentType">' + options(['物资捐赠', '资金资助', '志愿服务', '月捐意向'], '物资捐赠') + '</select></label>' +
-        '<label class="field"><span>意向内容 <span class="req">*</span></span>' +
-          '<input class="input" id="intentDetail" placeholder="例如：想捐 20 套绘本，11 月底前可以寄出"></label>' +
-        '<label class="field"><span>留言（选填）</span>' +
-          '<textarea class="input" id="intentMsg" placeholder="想了解的事项、方便联系的时间等"></textarea></label>' +
-        '<label class="field"><span>联系方式</span>' +
-          '<input class="input" id="intentPhone" value="138****6721"></label>' +
-        '<div class="form-err" id="portalErr"></div>' +
-        '<button type="button" class="btn btn--primary" data-act="intent-submit">提交支持意向</button>' +
-      '</form>';
-
-    return '<div class="portal-hero">' +
-      '<div><h2>你好，' + esc(d.contact) + '</h2>' +
-        '<p>这里是你的捐赠记录与物资去向；只展示与你本人相关的内容。</p></div>' +
-      '<div class="portal-hero__stats">' +
-        '<div><div class="portal-hero__num">2</div><div class="portal-hero__label">累计支持次数</div></div>' +
-        '<div><div class="portal-hero__num">20</div><div class="portal-hero__label">绘本（套）</div></div>' +
-        '<div><div class="portal-hero__num">2026-10</div><div class="portal-hero__label">最近一次</div></div>' +
-      '</div>' +
-    '</div>' +
-    '<div class="cols">' +
-      '<section class="panel">' +
-        '<div class="panel__head"><h3>我的捐赠与物资去向</h3><span class="hint">F-07 · P1 简化版</span></div>' +
-        cards +
-        '<p class="hint">只读展示；如需更正信息，请联系机构（F-07 异常：未匹配档案时转「申请绑定」）。</p>' +
-      '</section>' +
-      '<div>' +
-        '<section class="panel">' +
-          '<div class="panel__head"><h3>提交支持意向</h3><span class="hint">提交后由机构跟进</span></div>' +
-          intentBlock +
-        '</section>' +
-        '<section class="panel">' +
-          '<div class="panel__head"><h3>月度 / 年度报告</h3><span class="tag tag--warn">P2 · 规划中</span></div>' +
-          '<p class="small muted">上线后你将收到一页纸式的个性化汇总：本年捐赠、物资去向、参与的活动。</p>' +
-          '<button class="btn btn--ghost btn--sm" style="margin-top:10px" data-act="p2">了解规划</button>' +
-        '</section>' +
-        '<section class="panel">' +
-          '<p class="small muted">没看到自己的某笔捐赠？</p>' +
-          '<button class="link" data-act="bind-apply">申请绑定其他捐赠记录 →</button>' +
-        '</section>' +
-      '</div>' +
-    '</div>' +
-    '<p class="portal-foot">奇色花福利幼儿园 · 1991 年建园，1996 年起开展学前融合教育</p>';
-  }
-
   var VIEWS = {
     dashboard: viewDashboard,
     donors: viewDonors,
@@ -1305,8 +1344,7 @@
     wishlist: viewWishlist,
     wishDetail: viewWishDetail,
     analysis: viewAnalysis,
-    permissions: viewPermissions,
-    portal: viewPortal
+    permissions: viewPermissions
   };
 
   /* ---------------- 弹窗内容 ---------------- */
@@ -1419,7 +1457,7 @@
 
   function guideModal() {
     openModal('演示导览',
-      '<p class="small" style="margin-bottom:14px">这版原型用来讲清「记录 → 时间线 → 待办」这条主线，以及捐赠人端能看到什么。示例数据均为脱敏示意。</p>' +
+      '<p class="small" style="margin-bottom:14px">这版原型用来讲清「记录 → 时间线 → 待办」这条主线，以及外部人员登录后能看到什么。示例数据均为脱敏示意。</p>' +
       '<ol class="flow">' +
         '<li><span><b>数据导入</b>：Excel 字段映射 + 校验，政府类主体整行拒收</span><button class="link" data-act="view" data-view="import">去看 →</button></li>' +
         '<li><span><b>一句话记录</b>：AI 解析后人工确认，永不自动保存</span><button class="link" data-act="ai-record" data-id="d2">试一下 →</button></li>' +
@@ -1436,12 +1474,6 @@
     if (!t) return;
     var act = t.getAttribute('data-act');
 
-    if (act === 'role') {
-      state.role = t.getAttribute('data-role');
-      state.view = state.role === 'admin' ? 'dashboard' : 'portal';
-      render();
-      return;
-    }
     if (act === 'view') {
       if ($('#modal').classList.contains('is-open')) closeModal();
       state.view = t.getAttribute('data-view');
@@ -1485,39 +1517,26 @@
       state.auth.identity = pick;
       state.auth.draft = raw;
       state.auth.account = {
-        name: matched,
+        name: matched.name,
+        donorId: matched.donorId || null,
         role: pick === 'staff' ? '机构工作人员' : '外部人员',
         method: phoneOk ? '手机号' : '身份证号',
         masked: maskLogin(raw)
       };
-      state.role = 'admin';
       state.view = 'dashboard';
+      state.intentSent = false;
       render();
-      toast(pick === 'staff' ? '登录成功，已进入管理端' : '已登录（外部人员），当前为占位页', 'ok');
+      toast(pick === 'staff' ? '登录成功，已进入管理端' : '登录成功，已进入捐赠人门户', 'ok');
       return;
     }
     if (act === 'logout') {
       state.auth = { loggedIn: false, pick: 'staff', identity: 'staff', draft: '', account: null };
-      state.role = 'admin';
       state.view = 'dashboard';
+      state.intentSent = false;
       render();
       toast('已退出登录');
       return;
     }
-    if (act === 'external-scope') {
-      openModal('外部人员权限待定',
-        '<p class="small">以下范围尚未确认，本轮不开放任何数据入口，也不臆造细规则：</p>' +
-        '<ul class="small" style="margin:10px 0 0 18px;padding:0;line-height:2">' +
-          '<li>可见哪些捐赠人档案（本人 / 本机构 / 全部）</li>' +
-          '<li>能否提交互动记录与支持意向</li>' +
-          '<li>能否查看物资去向与回馈内容</li>' +
-          '<li>是否允许导出或打印</li>' +
-        '</ul>' +
-        '<p class="hint" style="margin-top:10px">默认假设：确认前，外部人员仅能看到占位页。</p>',
-        '<button class="btn btn--primary" data-act="close-modal">知道了</button>');
-      return;
-    }
-
     if (act === 'open-new-donor') { newDonorModal(); return; }
     if (act === 'create-donor') {
       var name = ($('#f_name') || {}).value || '';
@@ -1729,9 +1748,10 @@
     }
     if (act === 'intent-again') { state.intentSent = false; render(); return; }
     if (act === 'bind-apply') {
+      var bindName = (state.auth.identity === 'external' && state.auth.account) ? state.auth.account.name : '李静';
       openModal('申请绑定捐赠记录',
         '<p class="small">如果你的捐赠没有显示在这里，可以提交姓名与捐赠时间，由机构核对后绑定，不会展示他人数据（F-07）。</p>' +
-        '<label class="field" style="margin-top:12px"><span>姓名 / 单位</span><input class="input" value="李静"></label>' +
+        '<label class="field" style="margin-top:12px"><span>姓名 / 单位</span><input class="input" value="' + esc(bindName) + '"></label>' +
         '<label class="field"><span>捐赠时间或内容</span><input class="input" placeholder="例如：2026-06 现金 500 元"></label>',
         '<button class="btn btn--ghost" data-act="close-modal">取消</button>' +
         '<button class="btn btn--primary" data-act="bind-submit">提交申请</button>');
