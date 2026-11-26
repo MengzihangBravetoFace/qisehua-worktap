@@ -1034,27 +1034,27 @@
           '<input type="file" id="importFile" accept=".xlsx,.xls,.csv" hidden>' +
         '</div>';
 
-    var result = state.importLoaded
-      ? '<section class="panel">' +
-          '<div class="panel__head"><h3>校验结果</h3><span class="hint">逐行确认后才写入档案</span></div>' +
-          '<p class="hint" style="margin-bottom:10px">系统按固定必填字段（名称、联系人）自动识别，无需手动配置映射。</p>' +
-          '<div class="ck">' +
-            '<div class="ck__box"><div class="ck__num">' + valid.length + '</div><div class="ck__label">待确认</div></div>' +
-            '<div class="ck__box ck__box--warn"><div class="ck__num">' + state.importDone + '</div><div class="ck__label">本次已导入</div></div>' +
-            '<div class="ck__box ck__box--danger"><div class="ck__num">' + blocked + '</div><div class="ck__label">已拦截</div></div>' +
-          '</div>' +
-          '<div class="table-scroll"><table class="table"><thead><tr>' +
-            '<th style="width:44px"><input type="checkbox" id="importAll"' + (valid.length > 0 && sel === valid.length ? ' checked' : '') + ' title="全选可导入行"></th>' +
-            '<th>行号</th><th>提取字段</th><th>校验</th><th>原因 / 处理</th></tr></thead><tbody>' +
-            (rows.length ? rows.map(importRowHtml).join('') : '<tr><td colspan="5"><div class="empty">没有待处理的行，已全部处理</div></td></tr>') +
-          '</tbody></table></div>' +
-          '<div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap">' +
-            '<button class="btn btn--primary" data-act="import-approve"' + (sel ? '' : ' disabled') + '>通过所选' + (sel ? '（' + sel + '）' : '') + '</button>' +
-            '<button class="btn btn--ghost" data-act="view" data-view="donors">查看捐赠人档案</button>' +
-          '</div>' +
-          '<p class="hint" style="margin-top:10px">未通过的行会留在列表里，不会写入档案；演示环境未读取文件内容，提取结果为固定示例数据。</p>' +
-        '</section>'
-      : '';
+    var result = '<section class="panel">' +
+        '<div class="panel__head"><h3>校验结果</h3><span class="hint">逐行确认后才写入档案</span></div>' +
+        '<p class="hint" style="margin-bottom:10px">系统按固定必填字段（名称、联系人）自动识别，无需手动配置映射。</p>' +
+        '<div class="ck">' +
+          '<div class="ck__box"><div class="ck__num">' + valid.length + '</div><div class="ck__label">待确认</div></div>' +
+          '<div class="ck__box ck__box--warn"><div class="ck__num">' + state.importDone + '</div><div class="ck__label">本次已导入</div></div>' +
+          '<div class="ck__box ck__box--danger"><div class="ck__num">' + blocked + '</div><div class="ck__label">已拦截</div></div>' +
+        '</div>' +
+        (state.importLoaded
+          ? '<div class="table-scroll"><table class="table"><thead><tr>' +
+              '<th style="width:44px"><input type="checkbox" id="importAll"' + (valid.length > 0 && sel === valid.length ? ' checked' : '') + ' title="全选可导入行"></th>' +
+              '<th>行号</th><th>提取字段</th><th>校验</th><th>原因 / 处理</th></tr></thead><tbody>' +
+              (rows.length ? rows.map(importRowHtml).join('') : '<tr><td colspan="5"><div class="empty">没有待处理的行，已全部处理</div></td></tr>') +
+            '</tbody></table></div>' +
+            '<div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap">' +
+              '<button class="btn btn--primary" data-act="import-approve"' + (sel ? '' : ' disabled') + '>通过所选' + (sel ? '（' + sel + '）' : '') + '</button>' +
+              '<button class="btn btn--ghost" data-act="view" data-view="donors">查看捐赠人档案</button>' +
+            '</div>' +
+            '<p class="hint" style="margin-top:10px">未通过的行会留在列表里，不会写入档案；演示环境未读取文件内容，提取结果为固定示例数据。</p>'
+          : '<p class="hint" style="margin-top:12px">上传文件并完成自动提取后，这里会逐行显示提取字段与校验结果。</p>') +
+      '</section>';
 
     return '<section class="panel">' +
       '<div class="panel__head"><h3>上传脱敏 Excel</h3><span class="hint">单次上限 500 行 · 政府类主体整行拒收（F-02 / F-12）</span></div>' +
